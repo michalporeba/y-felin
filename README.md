@@ -15,3 +15,5 @@ that will allow me to manage tasks in on a local file system, but synchronise it
 * Use lofipod package (it is early development, but if features are missing suggest improvements to lofipod). 
 * Use and expand ontology.ttl
 * All data synchronisation should go through lofipod
+* See `ADR.md` for accepted architecture decisions
+* See `PLANS.md` for small, sequential implementation slices

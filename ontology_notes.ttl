@@ -1,0 +1,62 @@
+@prefix mlg: <https://michalporeba.com/ns/lifegraph#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix schema: <https://schema.org/> .
+@prefix life: <http://purl.org/vocab/lifecycle/schema#> .
+
+# Deferred ontology material removed from ontology.ttl while the core model is
+# kept intentionally minimal. These terms may be reintroduced later if the
+# application needs them.
+
+mlg:edtf
+  a rdfs:Datatype ;
+  rdfs:label "EDTF literal"@en ;
+  rdfs:comment "A string literal interpreted as an EDTF date or date-like expression."@en .
+
+mlg:status
+  a owl:ObjectProperty ;
+  rdfs:label "status"@en ;
+  rdfs:comment "The current status of a task."@en ;
+  rdfs:domain mlg:Task .
+
+mlg:entryDate
+  a owl:DatatypeProperty ;
+  rdfs:label "entry date"@en ;
+  rdfs:comment "A journal date expressed in EDTF form."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range mlg:edtf .
+
+mlg:due
+  a owl:DatatypeProperty ;
+  rdfs:label "due"@en ;
+  rdfs:comment "A task due date expressed in EDTF form."@en ;
+  rdfs:domain mlg:Task ;
+  rdfs:range mlg:edtf .
+
+mlg:aboutTask
+  a owl:ObjectProperty ;
+  rdfs:label "about task"@en ;
+  rdfs:comment "Links a journal entry to a related task."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range mlg:Task .
+
+mlg:relatedTo
+  a owl:ObjectProperty ;
+  rdfs:label "related to"@en ;
+  rdfs:comment "A generic relation between LifeGraph resources."@en .
+
+mlg:Todo
+  a owl:NamedIndividual ;
+  rdfs:label "To do"@en .
+
+mlg:Done
+  a owl:NamedIndividual ;
+  rdfs:label "Done"@en .
+
+# Previous superclass links retained as notes only.
+
+mlg:Task
+  rdfs:subClassOf life:Task .
+
+mlg:JournalEntry
+  rdfs:subClassOf schema:BlogPosting .

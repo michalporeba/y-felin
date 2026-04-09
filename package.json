@@ -1,0 +1,33 @@
+{
+  "name": "melin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local-first terminal application backed by RDF and Solid Pods.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "melin": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "cli": "node --import tsx src/cli.ts",
+    "tui": "node --import tsx src/tui.tsx",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ink": "^7.0.0",
+    "lofipod": "^0.2.0",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "@types/react": "^19.2.2",
+    "ink-testing-library": "^4.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

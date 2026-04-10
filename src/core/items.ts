@@ -4,11 +4,11 @@ export type ItemSummary = {
   readonly createdAt: string;
 };
 
-export function compareItemsNewestFirst(
+export function compareItemsOldestFirst(
   left: ItemSummary,
   right: ItemSummary,
 ): number {
-  const byCreatedAt = right.createdAt.localeCompare(left.createdAt);
+  const byCreatedAt = left.createdAt.localeCompare(right.createdAt);
   if (byCreatedAt !== 0) {
     return byCreatedAt;
   }

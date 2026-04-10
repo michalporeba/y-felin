@@ -2,7 +2,7 @@ export { describeApp } from "./app.js";
 export type { AppDescriptor, AppSurface } from "./app.js";
 export type { ActionDefinition, ActionId, ActionMap } from "./actions.js";
 export type { AppError, AppErrorCode } from "./errors.js";
-export { compareItemsNewestFirst } from "./items.js";
+export { compareItemsOldestFirst } from "./items.js";
 export type { ItemSummary } from "./items.js";
 export {
   getPerspective,

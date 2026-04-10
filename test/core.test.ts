@@ -98,7 +98,7 @@ describe("shared core", () => {
     });
   });
 
-  it("lists items through shared selectors in newest-first order", async () => {
+  it("lists items through shared selectors in chronological order", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-test-"));
     tempRoots.push(root);
 
@@ -121,14 +121,14 @@ describe("shared core", () => {
       ok: true,
       value: [
         {
-          id: "item-2",
-          title: "Newer",
-          createdAt: "2026-04-09T09:00:00.000Z",
-        },
-        {
           id: "item-1",
           title: "Older",
           createdAt: "2026-04-08T09:00:00.000Z",
+        },
+        {
+          id: "item-2",
+          title: "Newer",
+          createdAt: "2026-04-09T09:00:00.000Z",
         },
       ],
     });

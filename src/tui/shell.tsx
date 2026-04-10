@@ -499,7 +499,6 @@ function renderPerspectiveBody(
     <Box flexDirection="column" paddingX={2}>
       {itemsState.items.map((item, index) => {
         const selected = index === selectedIndex;
-        const showCreateRow = composer.mode === "create" && index === selectedIndex + 1;
         const showEditRow = composer.mode === "edit" && composer.itemId === item.id;
 
         return (
@@ -513,7 +512,7 @@ function renderPerspectiveBody(
                 {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
                 wrap="truncate-end"
               >
-                {selected ? ">" : " "} {item.title} ({item.createdAt})
+                {selected ? ">" : " "} {item.title}
               </Text>
             )}
             {showEditRow && composer.errorMessage ? (
@@ -521,20 +520,10 @@ function renderPerspectiveBody(
                 {composer.errorMessage}
               </Text>
             ) : null}
-            {showCreateRow ? (
-              <Text {...defaultTuiTheme.accent} wrap="truncate-end">
-                {renderComposerLine(composer)}
-              </Text>
-            ) : null}
-            {showCreateRow && composer.errorMessage ? (
-              <Text {...defaultTuiTheme.error} wrap="truncate-end">
-                {composer.errorMessage}
-              </Text>
-            ) : null}
           </React.Fragment>
         );
       })}
-      {composer.mode === "create" && selectedIndex >= itemsState.items.length - 1 ? (
+      {composer.mode === "create" ? (
         <>
           <Text {...defaultTuiTheme.accent} wrap="truncate-end">
             {renderComposerLine(composer)}

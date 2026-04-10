@@ -145,7 +145,7 @@ describe("TuiShell", () => {
       "Focus: 1/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> Newer");
+    expect(app.lastFrame()).toContain("> Older");
 
     app.stdin.write("j");
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -156,7 +156,7 @@ describe("TuiShell", () => {
       "Focus: 2/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> Older");
+    expect(app.lastFrame()).toContain("> Newer");
 
     app.unmount();
     await services.dispose();
@@ -207,6 +207,47 @@ describe("TuiShell", () => {
         createdAt: "2026-04-09T12:00:00.000Z",
       },
     ]);
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("shows the inline create row at the bottom of the inbox", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-create-bottom-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-1",
+      title: "First",
+      createdAt: "2026-04-09T09:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-2",
+      title: "Second",
+      createdAt: "2026-04-09T10:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-3",
+      title: "Third",
+      createdAt: "2026-04-09T11:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+    const app = render(
+      <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    app.stdin.write("a");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const frame = app.lastFrame();
+    const thirdIndex = frame.indexOf("Third");
+    const composerIndex = frame.indexOf("new task> _");
+
+    expectFrameToContainAll(frame, ["First", "Second", "Third", "new task> _"]);
+    expect(thirdIndex).toBeGreaterThanOrEqual(0);
+    expect(composerIndex).toBeGreaterThan(thirdIndex);
 
     app.unmount();
     await services.dispose();
@@ -265,10 +306,7 @@ describe("TuiShell", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 100));
-    app.stdin.write("j");
-    await new Promise((resolve) => setTimeout(resolve, 20));
-
-    expectFrameToContainAll(app.lastFrame(), ["Focus: 2/2", "> First"]);
+    expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", "> First"]);
 
     app.stdin.write("e");
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -292,7 +330,7 @@ describe("TuiShell", () => {
 
     expectFrameToContainAll(app.lastFrame(), [
       "Renamed",
-      "Focus: 2/2",
+      "Focus: 1/2",
       "Editor: idle",
     ]);
     expect(app.lastFrame()).toContain("> Renamed");

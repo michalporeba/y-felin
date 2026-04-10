@@ -5,7 +5,7 @@ import {
   type MelinLocalEngine,
 } from "../local/index.js";
 import { getPerspective, listPerspectives } from "./perspectives.js";
-import { compareItemsNewestFirst, type ItemSummary } from "./items.js";
+import { compareItemsOldestFirst, type ItemSummary } from "./items.js";
 import type { SyncState } from "./sync.js";
 
 export type AppServices = {
@@ -55,7 +55,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
     items: {
       async list(options) {
         const items = await requireLocalEngine().listItems(options);
-        return [...items].sort(compareItemsNewestFirst);
+        return [...items].sort(compareItemsOldestFirst);
       },
       async create({ title }) {
         const trimmedTitle = title.trim();

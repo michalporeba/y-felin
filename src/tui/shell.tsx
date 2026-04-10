@@ -337,11 +337,11 @@ function MainArea({
         </Text>
       </Box>
       <FullWidthRule columns={columns} />
-      <ComposerBlock composer={composer} />
       <PerspectiveBody
         perspectiveResult={perspectiveResult}
         itemsState={itemsState}
         selectedIndex={selectedIndex}
+        composer={composer}
       />
     </Box>
   );
@@ -381,6 +381,12 @@ function BottomBar({
       : composer.mode === "edit"
         ? "Editor: edit"
         : "Editor: create";
+  const keyHints =
+    composer.mode === "idle"
+      ? "j/k move | a new | e edit"
+      : composer.mode === "edit"
+        ? "editing"
+        : "creating";
 
   return (
     <Box flexDirection="column" width={columns}>
@@ -389,7 +395,7 @@ function BottomBar({
         <Text {...defaultTuiTheme.muted} wrap="truncate-end">
           size {columns}x{rows} | {focusLabel} | {composerLabel} | {describeSyncState(
             syncState,
-          )} | j/k move | a add | e edit
+          )} | {keyHints}
         </Text>
       </Box>
     </Box>
@@ -406,48 +412,12 @@ function renderPerspectiveHeading(
   return perspectiveResult.value.title;
 }
 
-function ComposerBlock({
-  composer,
-}: {
-  readonly composer: {
-    readonly mode: "idle" | "create" | "edit";
-    readonly value: string;
-    readonly itemId?: string;
-    readonly errorMessage?: string;
-  };
-}) {
-  if (composer.mode === "idle") {
-    return null;
-  }
-
-  return (
-    <Box flexDirection="column" marginBottom={1} paddingX={2}>
-      <Text
-        {...(composer.mode === "edit"
-          ? defaultTuiTheme.accent
-          : { ...defaultTuiTheme.accent, color: "green" as const })}
-      >
-        {composer.mode === "edit" ? "Edit" : "Capture"} &gt; {composer.value}
-      </Text>
-      <Text
-        {...(composer.errorMessage
-          ? defaultTuiTheme.error
-          : defaultTuiTheme.warning)}
-      >
-        {composer.errorMessage ??
-          (composer.mode === "edit"
-            ? "Enter to save changes, Esc to cancel."
-            : "Enter to save, Esc to cancel.")}
-      </Text>
-    </Box>
-  );
-}
-
 function PerspectiveBody(
   {
     perspectiveResult,
     itemsState,
     selectedIndex,
+    composer,
   }: {
     readonly perspectiveResult: ReturnType<typeof getPerspective>;
     readonly itemsState: {
@@ -456,9 +426,20 @@ function PerspectiveBody(
       readonly errorMessage?: string;
     };
     readonly selectedIndex: number;
+    readonly composer: {
+      readonly mode: "idle" | "create" | "edit";
+      readonly value: string;
+      readonly itemId?: string;
+      readonly errorMessage?: string;
+    };
   },
 ) {
-  const body = renderPerspectiveBody(perspectiveResult, itemsState, selectedIndex);
+  const body = renderPerspectiveBody(
+    perspectiveResult,
+    itemsState,
+    selectedIndex,
+    composer,
+  );
 
   if (typeof body === "string") {
     return <Text wrap="wrap">{body}</Text>;
@@ -475,6 +456,12 @@ function renderPerspectiveBody(
     readonly errorMessage?: string;
   },
   selectedIndex: number,
+  composer: {
+    readonly mode: "idle" | "create" | "edit";
+    readonly value: string;
+    readonly itemId?: string;
+    readonly errorMessage?: string;
+  },
 ): React.ReactNode {
   if (!perspectiveResult.ok) {
     return perspectiveResult.error.message;
@@ -492,6 +479,16 @@ function renderPerspectiveBody(
     return (
       <Box flexDirection="column" paddingX={2}>
         <Text>{perspectiveResult.value.summary}</Text>
+        {composer.mode === "create" ? (
+          <Text {...defaultTuiTheme.accent} wrap="truncate-end">
+            {renderComposerLine(composer)}
+          </Text>
+        ) : null}
+        {composer.errorMessage ? (
+          <Text {...defaultTuiTheme.error} wrap="truncate-end">
+            {composer.errorMessage}
+          </Text>
+        ) : null}
         <Text {...defaultTuiTheme.muted}>Inbox is empty.</Text>
         <Text {...defaultTuiTheme.muted}>Press a to capture your first entry.</Text>
       </Box>
@@ -502,17 +499,61 @@ function renderPerspectiveBody(
     <Box flexDirection="column" paddingX={2}>
       {itemsState.items.map((item, index) => {
         const selected = index === selectedIndex;
+        const showCreateRow = composer.mode === "create" && index === selectedIndex + 1;
+        const showEditRow = composer.mode === "edit" && composer.itemId === item.id;
 
         return (
-          <Text
-            key={item.id}
-            {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
-            wrap="truncate-end"
-          >
-            {selected ? ">" : " "} {item.title} ({item.createdAt})
-          </Text>
+          <React.Fragment key={item.id}>
+            {showEditRow ? (
+              <Text {...defaultTuiTheme.accent} wrap="truncate-end">
+                {renderComposerLine(composer)}
+              </Text>
+            ) : (
+              <Text
+                {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
+                wrap="truncate-end"
+              >
+                {selected ? ">" : " "} {item.title} ({item.createdAt})
+              </Text>
+            )}
+            {showEditRow && composer.errorMessage ? (
+              <Text {...defaultTuiTheme.error} wrap="truncate-end">
+                {composer.errorMessage}
+              </Text>
+            ) : null}
+            {showCreateRow ? (
+              <Text {...defaultTuiTheme.accent} wrap="truncate-end">
+                {renderComposerLine(composer)}
+              </Text>
+            ) : null}
+            {showCreateRow && composer.errorMessage ? (
+              <Text {...defaultTuiTheme.error} wrap="truncate-end">
+                {composer.errorMessage}
+              </Text>
+            ) : null}
+          </React.Fragment>
         );
       })}
+      {composer.mode === "create" && selectedIndex >= itemsState.items.length - 1 ? (
+        <>
+          <Text {...defaultTuiTheme.accent} wrap="truncate-end">
+            {renderComposerLine(composer)}
+          </Text>
+          {composer.errorMessage ? (
+            <Text {...defaultTuiTheme.error} wrap="truncate-end">
+              {composer.errorMessage}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
     </Box>
   );
+}
+
+function renderComposerLine(composer: {
+  readonly mode: "idle" | "create" | "edit";
+  readonly value: string;
+}): string {
+  const promptLabel = composer.mode === "edit" ? "edit task" : "new task";
+  return `${promptLabel}> ${composer.value}_`;
 }

@@ -180,14 +180,14 @@ describe("TuiShell", () => {
     app.stdin.write("a");
     await new Promise((resolve) => setTimeout(resolve, 10));
     expectFrameToContainAll(app.lastFrame(), [
-      "Capture >",
+      "new task>",
       "Editor: create",
-      "Enter to save, Esc to cancel.",
+      "creating",
     ]);
 
     app.stdin.write("New item");
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(app.lastFrame()).toContain("Capture > New item");
+    expect(app.lastFrame()).toContain("new task> New item_");
 
     app.stdin.write("\r");
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -227,12 +227,12 @@ describe("TuiShell", () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
     app.stdin.write("Discard me");
     await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(app.lastFrame()).toContain("Capture > Discard me");
+    expect(app.lastFrame()).toContain("new task> Discard me_");
 
     app.stdin.write("\u001B");
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(app.lastFrame()).not.toContain("Capture > Discard me");
+    expect(app.lastFrame()).not.toContain("new task> Discard me_");
     expectFrameToContainAll(app.lastFrame(), [
       "Inbox is empty.",
       "Editor: idle",
@@ -273,9 +273,9 @@ describe("TuiShell", () => {
     app.stdin.write("e");
     await new Promise((resolve) => setTimeout(resolve, 20));
     expectFrameToContainAll(app.lastFrame(), [
-      "Edit > First",
+      "edit task> First_",
       "Editor: edit",
-      "Enter to save changes, Esc to cancel.",
+      "editing",
     ]);
 
     for (let index = 0; index < "First".length; index += 1) {
@@ -285,7 +285,7 @@ describe("TuiShell", () => {
     app.stdin.write("Renamed");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(app.lastFrame()).toContain("Edit > Renamed");
+    expect(app.lastFrame()).toContain("edit task> Renamed_");
 
     app.stdin.write("\r");
     await new Promise((resolve) => setTimeout(resolve, 50));

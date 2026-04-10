@@ -5,7 +5,11 @@ import {
   type MelinLocalEngine,
 } from "../local/index.js";
 import { getPerspective, listPerspectives } from "./perspectives.js";
-import { compareItemsOldestFirst, type ItemSummary } from "./items.js";
+import {
+  compareItemsOldestFirst,
+  type ItemKind,
+  type ItemSummary,
+} from "./items.js";
 import type { SyncState } from "./sync.js";
 
 export type AppServices = {
@@ -15,7 +19,10 @@ export type AppServices = {
   };
   readonly items: {
     readonly list: (options?: { readonly limit?: number }) => Promise<ItemSummary[]>;
-    readonly create: (input: { readonly title: string }) => Promise<ItemSummary>;
+    readonly create: (input: {
+      readonly kind: ItemKind;
+      readonly title: string;
+    }) => Promise<ItemSummary>;
     readonly update: (input: {
       readonly id: string;
       readonly title: string;
@@ -57,7 +64,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         const items = await requireLocalEngine().listItems(options);
         return [...items].sort(compareItemsOldestFirst);
       },
-      async create({ title }) {
+      async create({ kind, title }) {
         const trimmedTitle = title.trim();
         if (!trimmedTitle) {
           throw new Error("Item title cannot be empty.");
@@ -65,6 +72,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
 
         return requireLocalEngine().saveItem({
           id: idGenerator(),
+          kind,
           title: trimmedTitle,
           createdAt: now(),
         });

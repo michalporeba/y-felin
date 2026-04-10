@@ -6,6 +6,7 @@ import {
   describeSyncState,
   getPerspective,
   type AppServices,
+  type ItemKind,
   type AppStore,
   type ItemSummary,
   type SyncState,
@@ -23,6 +24,14 @@ export type TuiShellProps = {
     readonly columns: number;
     readonly rows: number;
   };
+};
+
+type ComposerState = {
+  readonly mode: "idle" | "create" | "edit";
+  readonly kind?: ItemKind;
+  readonly value: string;
+  readonly itemId?: string;
+  readonly errorMessage?: string;
 };
 
 export function TuiShell({
@@ -48,12 +57,7 @@ export function TuiShell({
     items: [],
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [composer, setComposer] = useState<{
-    readonly mode: "idle" | "create" | "edit";
-    readonly value: string;
-    readonly itemId?: string;
-    readonly errorMessage?: string;
-  }>({
+  const [composer, setComposer] = useState<ComposerState>({
     mode: "idle",
     value: "",
   });
@@ -137,6 +141,7 @@ export function TuiShell({
       if (key.escape || _input === "\u001B") {
         setComposer({
           mode: "idle",
+          kind: undefined,
           value: "",
         });
         return;
@@ -151,6 +156,7 @@ export function TuiShell({
                   title: composer.value,
                 })
               : await appStore.dispatch("items.create", {
+                  kind: composer.kind ?? "task",
                   title: composer.value,
                 });
 
@@ -164,6 +170,7 @@ export function TuiShell({
 
           setComposer({
             mode: "idle",
+            kind: undefined,
             value: "",
           });
           const reloadedItems = await loadItems();
@@ -201,9 +208,19 @@ export function TuiShell({
       return;
     }
 
-    if (_input === "a" || _input === "i" || _input === "c") {
+    if (_input === "t") {
       setComposer({
         mode: "create",
+        kind: "task",
+        value: "",
+      });
+      return;
+    }
+
+    if (_input === "n") {
+      setComposer({
+        mode: "create",
+        kind: "note",
         value: "",
       });
       return;
@@ -221,6 +238,7 @@ export function TuiShell({
 
       setComposer({
         mode: "edit",
+        kind: currentItem.kind,
         itemId: currentItem.id,
         value: currentItem.title,
       });
@@ -322,12 +340,7 @@ function MainArea({
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
-  readonly composer: {
-    readonly mode: "idle" | "create" | "edit";
-    readonly value: string;
-    readonly itemId?: string;
-    readonly errorMessage?: string;
-  };
+  readonly composer: ComposerState;
 }) {
   return (
     <Box flexDirection="column" width={columns} height={height}>
@@ -363,12 +376,7 @@ function BottomBar({
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
-  readonly composer: {
-    readonly mode: "idle" | "create" | "edit";
-    readonly value: string;
-    readonly itemId?: string;
-    readonly errorMessage?: string;
-  };
+  readonly composer: ComposerState;
   readonly syncState: SyncState;
 }) {
   const focusLabel =
@@ -379,14 +387,14 @@ function BottomBar({
     composer.mode === "idle"
       ? "Editor: idle"
       : composer.mode === "edit"
-        ? "Editor: edit"
-        : "Editor: create";
+        ? `Editor: edit ${composer.kind ?? "task"}`
+        : `Editor: new ${composer.kind ?? "task"}`;
   const keyHints =
     composer.mode === "idle"
-      ? "j/k move | a new | e edit"
+      ? "j/k move | t task | n note | e edit"
       : composer.mode === "edit"
         ? "editing"
-        : "creating";
+        : `creating ${composer.kind ?? "task"}`;
 
   return (
     <Box flexDirection="column" width={columns}>
@@ -426,12 +434,7 @@ function PerspectiveBody(
       readonly errorMessage?: string;
     };
     readonly selectedIndex: number;
-    readonly composer: {
-      readonly mode: "idle" | "create" | "edit";
-      readonly value: string;
-      readonly itemId?: string;
-      readonly errorMessage?: string;
-    };
+    readonly composer: ComposerState;
   },
 ) {
   const body = renderPerspectiveBody(
@@ -456,12 +459,7 @@ function renderPerspectiveBody(
     readonly errorMessage?: string;
   },
   selectedIndex: number,
-  composer: {
-    readonly mode: "idle" | "create" | "edit";
-    readonly value: string;
-    readonly itemId?: string;
-    readonly errorMessage?: string;
-  },
+  composer: ComposerState,
 ): React.ReactNode {
   if (!perspectiveResult.ok) {
     return perspectiveResult.error.message;
@@ -490,7 +488,9 @@ function renderPerspectiveBody(
           </Text>
         ) : null}
         <Text {...defaultTuiTheme.muted}>Inbox is empty.</Text>
-        <Text {...defaultTuiTheme.muted}>Press a to capture your first entry.</Text>
+        <Text {...defaultTuiTheme.muted}>
+          Press t for a task or n for a note.
+        </Text>
       </Box>
     );
   }
@@ -539,10 +539,9 @@ function renderPerspectiveBody(
   );
 }
 
-function renderComposerLine(composer: {
-  readonly mode: "idle" | "create" | "edit";
-  readonly value: string;
-}): string {
-  const promptLabel = composer.mode === "edit" ? "edit task" : "new task";
+function renderComposerLine(composer: ComposerState): string {
+  const kindLabel = composer.kind ?? "task";
+  const promptLabel =
+    composer.mode === "edit" ? `edit ${kindLabel}` : `new ${kindLabel}`;
   return `${promptLabel}> ${composer.value}_`;
 }

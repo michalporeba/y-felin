@@ -177,12 +177,11 @@ describe("TuiShell", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    app.stdin.write("a");
+    app.stdin.write("t");
     await new Promise((resolve) => setTimeout(resolve, 10));
     expectFrameToContainAll(app.lastFrame(), [
       "new task>",
-      "Editor: create",
-      "creating",
+      "Editor: new task",
     ]);
 
     app.stdin.write("New item");
@@ -203,6 +202,7 @@ describe("TuiShell", () => {
     await expect(localEngine.listItems()).resolves.toEqual([
       {
         id: "item-captured",
+        kind: "task",
         title: "New item",
         createdAt: "2026-04-09T12:00:00.000Z",
       },
@@ -238,7 +238,7 @@ describe("TuiShell", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 100));
-    app.stdin.write("a");
+    app.stdin.write("t");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     const frame = app.lastFrame();
@@ -264,7 +264,7 @@ describe("TuiShell", () => {
 
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    app.stdin.write("a");
+    app.stdin.write("t");
     await new Promise((resolve) => setTimeout(resolve, 10));
     app.stdin.write("Discard me");
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -277,9 +277,47 @@ describe("TuiShell", () => {
     expectFrameToContainAll(app.lastFrame(), [
       "Inbox is empty.",
       "Editor: idle",
-      "Press a to capture your first entry.",
+      "Press t for a task or n for a note.",
     ]);
     await expect(localEngine.listItems()).resolves.toEqual([]);
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("creates notes with the n shortcut", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-note-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({
+      localEngine,
+      idGenerator: () => "item-note",
+      now: () => "2026-04-09T13:00:00.000Z",
+    });
+    const app = render(
+      <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    app.stdin.write("n");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expectFrameToContainAll(app.lastFrame(), [
+      "new note>",
+      "Editor: new note",
+    ]);
+
+    app.stdin.write("Remember this");
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    app.stdin.write("\r");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    await expect(localEngine.getItem("item-note")).resolves.toEqual({
+      id: "item-note",
+      kind: "note",
+      title: "Remember this",
+      createdAt: "2026-04-09T13:00:00.000Z",
+    });
 
     app.unmount();
     await services.dispose();
@@ -312,7 +350,7 @@ describe("TuiShell", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     expectFrameToContainAll(app.lastFrame(), [
       "edit task> First_",
-      "Editor: edit",
+      "Editor: edit task",
       "editing",
     ]);
 
@@ -337,6 +375,7 @@ describe("TuiShell", () => {
 
     await expect(localEngine.getItem("item-1")).resolves.toEqual({
       id: "item-1",
+      kind: "task",
       title: "Renamed",
       createdAt: "2026-04-09T09:00:00.000Z",
     });

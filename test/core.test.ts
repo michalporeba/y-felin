@@ -122,11 +122,13 @@ describe("shared core", () => {
       value: [
         {
           id: "item-1",
+          kind: "task",
           title: "Older",
           createdAt: "2026-04-08T09:00:00.000Z",
         },
         {
           id: "item-2",
+          kind: "task",
           title: "Newer",
           createdAt: "2026-04-09T09:00:00.000Z",
         },
@@ -149,11 +151,15 @@ describe("shared core", () => {
     const store = createAppStore(services);
 
     await expect(
-      store.dispatch("items.create", { title: "  Created from action  " }),
+      store.dispatch("items.create", {
+        kind: "task",
+        title: "  Created from action  ",
+      }),
     ).resolves.toEqual({
       ok: true,
       value: {
         id: "item-created",
+        kind: "task",
         title: "Created from action",
         createdAt: "2026-04-09T10:00:00.000Z",
       },
@@ -164,6 +170,7 @@ describe("shared core", () => {
       value: [
         {
           id: "item-created",
+          kind: "task",
           title: "Created from action",
           createdAt: "2026-04-09T10:00:00.000Z",
         },
@@ -196,6 +203,7 @@ describe("shared core", () => {
       ok: true,
       value: {
         id: "item-update",
+        kind: "task",
         title: "After edit",
         createdAt: "2026-04-09T10:00:00.000Z",
       },
@@ -203,6 +211,7 @@ describe("shared core", () => {
 
     await expect(localEngine.getItem("item-update")).resolves.toEqual({
       id: "item-update",
+      kind: "task",
       title: "After edit",
       createdAt: "2026-04-09T10:00:00.000Z",
     });
@@ -219,7 +228,7 @@ describe("shared core", () => {
     const store = createAppStore(services);
 
     await expect(
-      store.dispatch("items.create", { title: "   " }),
+      store.dispatch("items.create", { kind: "task", title: "   " }),
     ).resolves.toEqual({
       ok: false,
       error: {

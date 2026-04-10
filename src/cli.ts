@@ -36,7 +36,8 @@ export async function runCli(
       io.log("  melin --help");
       io.log("  melin tui");
       io.log("  melin list items");
-      io.log("  melin create item <title>");
+      io.log("  melin create task <title>");
+      io.log("  melin create note <title>");
       io.log("  melin update item <id> <title>");
       io.log("  melin show sync");
 
@@ -61,22 +62,26 @@ export async function runCli(
       }
 
       for (const item of result.value) {
-        io.log(`${item.id}  ${item.title}  ${item.createdAt}`);
+        io.log(`${item.id}  ${item.kind}  ${item.title}  ${item.createdAt}`);
       }
 
       return 0;
     }
 
-    if (argv[0] === "create" && argv[1] === "item") {
+    if (
+      argv[0] === "create" &&
+      (argv[1] === "task" || argv[1] === "note")
+    ) {
       const title = argv.slice(2).join(" ").trim();
-      const result = await store.dispatch("items.create", { title });
+      const kind = argv[1];
+      const result = await store.dispatch("items.create", { kind, title });
       if (!result.ok) {
         io.error(result.error.message);
         return 1;
       }
 
       io.log(
-        `Created ${result.value.id}  ${result.value.title}  ${result.value.createdAt}`,
+        `Created ${result.value.id}  ${result.value.kind}  ${result.value.title}  ${result.value.createdAt}`,
       );
       return 0;
     }
@@ -91,7 +96,7 @@ export async function runCli(
       }
 
       io.log(
-        `Updated ${result.value.id}  ${result.value.title}  ${result.value.createdAt}`,
+        `Updated ${result.value.id}  ${result.value.kind}  ${result.value.title}  ${result.value.createdAt}`,
       );
       return 0;
     }

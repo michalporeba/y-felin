@@ -1,6 +1,6 @@
 import type { AppServices } from "./services.js";
 
-import type { ItemSummary } from "./items.js";
+import type { ItemKind, ItemSummary } from "./items.js";
 import type { PerspectiveDefinition, PerspectiveId } from "./perspectives.js";
 import type { SyncState } from "./sync.js";
 
@@ -36,7 +36,7 @@ export type ActionMap = {
     output: ItemSummary[];
   };
   "items.create": {
-    input: { title: string };
+    input: { kind: ItemKind; title: string };
     output: ItemSummary;
   };
   "items.update": {

@@ -1,5 +1,8 @@
+export type ItemKind = "task" | "note";
+
 export type ItemSummary = {
   readonly id: string;
+  readonly kind: ItemKind;
   readonly title: string;
   readonly createdAt: string;
 };

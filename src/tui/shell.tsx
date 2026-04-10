@@ -11,6 +11,7 @@ import {
   type SyncState,
 } from "../core/index.js";
 import { resolveShellLayout } from "./layout.js";
+import { defaultTuiTheme, fillLine } from "./theme.js";
 
 export type TuiShellProps = {
   readonly showTopBar?: boolean;
@@ -278,18 +279,16 @@ function TopBar({
   readonly columns: number;
   readonly itemCount: number;
 }) {
+  const line = fillLine(
+    ` MELIN | inbox | items ${itemCount} | cols ${columns}`,
+    columns,
+  );
+
   return (
     <Box width={columns}>
-      <Box width={columns} paddingX={1}>
-        <Text
-          backgroundColor="white"
-          color="black"
-          bold
-          wrap="truncate-end"
-        >
-          MELIN | inbox | items {itemCount} | cols {columns}
-        </Text>
-      </Box>
+      <Text {...defaultTuiTheme.topBar} wrap="truncate-end">
+        {line}
+      </Text>
     </Box>
   );
 }
@@ -333,7 +332,7 @@ function MainArea({
   return (
     <Box flexDirection="column" width={columns} height={height}>
       <Box marginTop={1} marginBottom={1} paddingX={1}>
-        <Text bold color="cyan" wrap="truncate-end">
+        <Text {...defaultTuiTheme.accent} wrap="truncate-end">
           [{renderPerspectiveHeading(perspectiveResult)}] main pane | rows {height}
         </Text>
       </Box>
@@ -387,7 +386,7 @@ function BottomBar({
     <Box flexDirection="column" width={columns}>
       <FullWidthRule columns={columns} />
       <Box width={columns} paddingX={1}>
-        <Text dimColor wrap="truncate-end">
+        <Text {...defaultTuiTheme.muted} wrap="truncate-end">
           size {columns}x{rows} | {focusLabel} | {composerLabel} | {describeSyncState(
             syncState,
           )} | j/k move | a add | e edit
@@ -423,10 +422,18 @@ function ComposerBlock({
 
   return (
     <Box flexDirection="column" marginBottom={1} paddingX={2}>
-      <Text color={composer.mode === "edit" ? "cyan" : "green"}>
+      <Text
+        {...(composer.mode === "edit"
+          ? defaultTuiTheme.accent
+          : { ...defaultTuiTheme.accent, color: "green" as const })}
+      >
         {composer.mode === "edit" ? "Edit" : "Capture"} &gt; {composer.value}
       </Text>
-      <Text color={composer.errorMessage ? "red" : "yellow"}>
+      <Text
+        {...(composer.errorMessage
+          ? defaultTuiTheme.error
+          : defaultTuiTheme.warning)}
+      >
         {composer.errorMessage ??
           (composer.mode === "edit"
             ? "Enter to save changes, Esc to cancel."
@@ -485,8 +492,8 @@ function renderPerspectiveBody(
     return (
       <Box flexDirection="column" paddingX={2}>
         <Text>{perspectiveResult.value.summary}</Text>
-        <Text dimColor>Inbox is empty.</Text>
-        <Text dimColor>Press a to capture your first entry.</Text>
+        <Text {...defaultTuiTheme.muted}>Inbox is empty.</Text>
+        <Text {...defaultTuiTheme.muted}>Press a to capture your first entry.</Text>
       </Box>
     );
   }
@@ -499,9 +506,7 @@ function renderPerspectiveBody(
         return (
           <Text
             key={item.id}
-            inverse={selected}
-            color={selected ? "white" : "gray"}
-            backgroundColor={selected ? "blue" : undefined}
+            {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
             wrap="truncate-end"
           >
             {selected ? ">" : " "} {item.title} ({item.createdAt})

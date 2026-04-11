@@ -114,6 +114,58 @@ describe("TuiShell", () => {
     app.unmount();
   });
 
+  it("opens contextual help with h, full help with H, and closes with Esc", async () => {
+    const app = render(<TuiShell dimensions={{ columns: 90, rows: 20 }} />);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    app.stdin.write("h");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expectFrameToContainAll(app.lastFrame(), [
+      "[Inbox Help]",
+      "Actions",
+      "Symbols",
+      "Create a new task at the bottom of the inbox.",
+      "Task entry.",
+      "Editor: help",
+      "H full help | E",
+    ]);
+
+    app.stdin.write("H");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expectFrameToContainAll(app.lastFrame(), [
+      "[Help]",
+      "Help Levels",
+      "Open contextual help for the current perspective.",
+      "Open the main help document.",
+      "h contextual he",
+    ]);
+
+    app.stdin.write("h");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expectFrameToContainAll(app.lastFrame(), [
+      "[Inbox Help]",
+      "Actions",
+      "Symbols",
+      "H full help | E",
+    ]);
+
+    app.stdin.write("\u001B");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(app.lastFrame()).not.toContain("[Inbox Help]");
+    expect(app.lastFrame()).not.toContain("[Help]");
+    expectFrameToContainAll(app.lastFrame(), [
+      "[Inbox]",
+      "Editor: idle",
+      "sync local-only",
+    ]);
+
+    app.unmount();
+  });
+
   it("renders persisted inbox items and supports keyboard navigation", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-test-"));
     const localEngine = createLocalEngine({ dataDir: root });

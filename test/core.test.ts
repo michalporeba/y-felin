@@ -5,6 +5,7 @@ import {
   createActionRegistry,
   describeSyncState,
   getPerspective,
+  getPerspectiveHelp,
   listPerspectives,
 } from "../src/core/index.js";
 import { createAndSaveDefaultItem, createLocalEngine } from "../src/index.js";
@@ -39,6 +40,47 @@ describe("shared core", () => {
         id: "inbox",
         title: "Inbox",
         summary: "Primary perspective for capturing and reviewing items.",
+      },
+    });
+  });
+
+  it("returns help for a perspective by id", () => {
+    expect(getPerspectiveHelp("inbox")).toEqual({
+      ok: true,
+      value: {
+        title: "Inbox Help",
+        summary: "Actions and symbols for the chronological inbox perspective.",
+        actions: [
+          {
+            label: "j / k",
+            description: "Move the current selection down or up.",
+          },
+          {
+            label: "t",
+            description: "Create a new task at the bottom of the inbox.",
+          },
+          {
+            label: "n",
+            description: "Create a new note at the bottom of the inbox.",
+          },
+          {
+            label: "e",
+            description: "Edit the selected entry title in place.",
+          },
+          {
+            label: "h",
+            description: "Open or close help for the current perspective.",
+          },
+          {
+            label: "Esc",
+            description: "Close help or cancel the current editor.",
+          },
+        ],
+        symbols: [
+          { label: ">", description: "Marks the currently selected row." },
+          { label: "□", description: "Task entry." },
+          { label: "-", description: "Note entry." },
+        ],
       },
     });
   });

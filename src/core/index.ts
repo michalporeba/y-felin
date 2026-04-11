@@ -6,7 +6,10 @@ export { compareItemsOldestFirst } from "./items.js";
 export type { ItemKind, ItemSummary } from "./items.js";
 export {
   getPerspective,
+  getPerspectiveHelp,
   listPerspectives,
+  type PerspectiveHelpDefinition,
+  type PerspectiveHelpEntry,
   type PerspectiveDefinition,
   type PerspectiveId,
 } from "./perspectives.js";

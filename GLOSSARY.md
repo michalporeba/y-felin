@@ -113,6 +113,30 @@ Supporting information that helps interpret the current panel or selection.
 
 Examples include item count, sync status, filter state, and current mode.
 
+### Workflow State
+
+The primary progress state of work.
+
+This is the semantic dimension behind markers such as open, active, scheduled, and done.
+
+### Priority
+
+The relative importance of an entry.
+
+Priority is distinct from workflow, delegation, or review uncertainty.
+
+### Review State
+
+A triage-oriented state used to help decide whether work is truly needed or should likely be abandoned.
+
+Examples include needing confirmation and being an abandon candidate.
+
+### Coordination State
+
+A state describing coordination with other people or dependencies.
+
+Examples include waiting, blocked, to delegate, and delegated.
+
 ## Design Terms
 
 ### Look
@@ -138,6 +162,24 @@ Examples include a highlighted selection, footer key hints, or an inline prompt 
 How much information is shown in a given space.
 
 This is an important explicit design concern for a terminal application.
+
+### Triage Marker
+
+The visual marker lane used for triage emphasis before the main entry symbol.
+
+In Melin this lane may reflect `priority` or `reviewState`, even though those are separate semantic dimensions in the ontology.
+
+### Workflow Marker
+
+The visual marker lane used for the primary workflow state of an entry.
+
+Examples include open, active, and done task markers.
+
+### Coordination Marker
+
+The visual marker lane used for coordination-related states.
+
+Examples include delegation markers.
 
 ## Recommended Melin-Specific Definitions
 

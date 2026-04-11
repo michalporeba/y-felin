@@ -72,6 +72,23 @@ this file records the architectural direction those steps should follow.
 - Ontology changes should be incremental and driven by concrete user flows.
 - The ontology is currently local to the project but may later be published
   separately.
+- Journal-entry semantics should be separated into distinct dimensions rather
+  than collapsed into one status field.
+- The current ontology direction uses:
+  - `mlg:workflowState` for progress through work
+  - `mlg:priority` for importance
+  - `mlg:reviewState` for triage concerns such as confirmation or likely
+    abandonment
+  - `mlg:coordinationState` for waiting, blocking, and delegation
+- Canonical workflow values should use short names such as `mlg:Open`,
+  `mlg:Scheduled`, `mlg:Active`, and `mlg:Done`.
+- UI marker lanes are not one-to-one ontology fields:
+  - the triage marker lane may render information derived from `priority` and
+    `reviewState`
+  - the workflow marker lane renders `workflowState`
+  - the coordination marker lane renders `coordinationState`
+- Default Melin symbols may be recorded in the ontology as annotations for
+  concepts or classes, but applications remain free to choose different glyphs.
 
 ### Configuration
 

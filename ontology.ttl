@@ -3,11 +3,17 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 
 <https://michalporeba.com/ns/lifegraph>
   a owl:Ontology ;
   rdfs:label "LifeGraph ontology"@en ;
   rdfs:comment "Core ontology for personal local-first applications."@en .
+
+mlg:symbol
+  a owl:AnnotationProperty ;
+  rdfs:label "symbol"@en ;
+  rdfs:comment "A default symbolic representation associated with a concept or class. Other applications may choose different glyphs."@en .
 
 mlg:JournalEntry
   a owl:Class ;
@@ -18,13 +24,149 @@ mlg:Task
   a owl:Class ;
   rdfs:label "Task"@en ;
   rdfs:comment "A task journal entry."@en ;
+  mlg:symbol "□" ;
   rdfs:subClassOf mlg:JournalEntry .
 
 mlg:Note
   a owl:Class ;
   rdfs:label "Note"@en ;
   rdfs:comment "A note journal entry."@en ;
+  mlg:symbol "-" ;
   rdfs:subClassOf mlg:JournalEntry .
+
+mlg:workflowState
+  a owl:ObjectProperty ;
+  rdfs:label "workflow state"@en ;
+  rdfs:comment "The primary workflow state of a journal entry, used for progression from open work to completed work."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range skos:Concept .
+
+mlg:priority
+  a owl:ObjectProperty ;
+  rdfs:label "priority"@en ;
+  rdfs:comment "The relative importance of a journal entry."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range skos:Concept .
+
+mlg:reviewState
+  a owl:ObjectProperty ;
+  rdfs:label "review state"@en ;
+  rdfs:comment "A state used during inbox review or triage, such as needing confirmation or being a likely abandon candidate."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range skos:Concept .
+
+mlg:coordinationState
+  a owl:ObjectProperty ;
+  rdfs:label "coordination state"@en ;
+  rdfs:comment "A state describing external coordination, handoff, waiting, blocking, or delegation."@en ;
+  rdfs:domain mlg:JournalEntry ;
+  rdfs:range skos:Concept .
+
+mlg:WorkflowStates
+  a skos:ConceptScheme ;
+  skos:prefLabel "Workflow states"@en ;
+  skos:definition "Primary progression states for work tracked in Melin and related applications."@en .
+
+mlg:PriorityLevels
+  a skos:ConceptScheme ;
+  skos:prefLabel "Priority levels"@en ;
+  skos:definition "Priority values for journal entries."@en .
+
+mlg:ReviewStates
+  a skos:ConceptScheme ;
+  skos:prefLabel "Review states"@en ;
+  skos:definition "States used during triage and review to decide whether work is needed or should be abandoned."@en .
+
+mlg:CoordinationStates
+  a skos:ConceptScheme ;
+  skos:prefLabel "Coordination states"@en ;
+  skos:definition "States describing delegation, waiting, blocking, and related coordination concerns."@en .
+
+mlg:Open
+  a skos:Concept ;
+  skos:inScheme mlg:WorkflowStates ;
+  skos:prefLabel "Open"@en ;
+  skos:definition "Work that is known and available, but not yet active."@en ;
+  mlg:symbol "□" .
+
+mlg:Scheduled
+  a skos:Concept ;
+  skos:inScheme mlg:WorkflowStates ;
+  skos:prefLabel "Scheduled"@en ;
+  skos:definition "Work intentionally deferred or scheduled for later."@en .
+
+mlg:Active
+  a skos:Concept ;
+  skos:inScheme mlg:WorkflowStates ;
+  skos:prefLabel "Active"@en ;
+  skos:definition "Work currently in progress."@en ;
+  mlg:symbol "◩" .
+
+mlg:Done
+  a skos:Concept ;
+  skos:inScheme mlg:WorkflowStates ;
+  skos:prefLabel "Done"@en ;
+  skos:definition "Work completed or finished."@en ;
+  mlg:symbol "■" .
+
+mlg:HighPriority
+  a skos:Concept ;
+  skos:inScheme mlg:PriorityLevels ;
+  skos:prefLabel "High priority"@en ;
+  skos:definition "Work that should stand out as especially important."@en ;
+  mlg:symbol "*" .
+
+mlg:NormalPriority
+  a skos:Concept ;
+  skos:inScheme mlg:PriorityLevels ;
+  skos:prefLabel "Normal priority"@en ;
+  skos:definition "The default priority for work when no stronger priority marker is needed."@en .
+
+mlg:LowPriority
+  a skos:Concept ;
+  skos:inScheme mlg:PriorityLevels ;
+  skos:prefLabel "Low priority"@en ;
+  skos:definition "Work that is explicitly less important than normal priority."@en .
+
+mlg:NeedsConfirmation
+  a skos:Concept ;
+  skos:inScheme mlg:ReviewStates ;
+  skos:prefLabel "Needs confirmation"@en ;
+  skos:definition "Work captured for follow-up because its need, desirability, or feasibility must first be confirmed."@en ;
+  mlg:symbol "?" .
+
+mlg:AbandonCandidate
+  a skos:Concept ;
+  skos:inScheme mlg:ReviewStates ;
+  skos:prefLabel "Abandon candidate"@en ;
+  skos:definition "Work likely to be abandoned later, but intentionally kept visible until review or end-of-day cleanup."@en ;
+  mlg:symbol "~" .
+
+mlg:Blocked
+  a skos:Concept ;
+  skos:inScheme mlg:CoordinationStates ;
+  skos:prefLabel "Blocked"@en ;
+  skos:definition "Work that cannot proceed because an external dependency or constraint is blocking it."@en .
+
+mlg:Waiting
+  a skos:Concept ;
+  skos:inScheme mlg:CoordinationStates ;
+  skos:prefLabel "Waiting"@en ;
+  skos:definition "Work paused while awaiting an answer, response, or external event."@en .
+
+mlg:ToDelegate
+  a skos:Concept ;
+  skos:inScheme mlg:CoordinationStates ;
+  skos:prefLabel "To delegate"@en ;
+  skos:definition "Work identified for delegation but not yet handed over."@en ;
+  mlg:symbol "⇢" .
+
+mlg:Delegated
+  a skos:Concept ;
+  skos:inScheme mlg:CoordinationStates ;
+  skos:prefLabel "Delegated"@en ;
+  skos:definition "Work already handed over to another person or system."@en ;
+  mlg:symbol "➜" .
 
 dct:title
   rdfs:label "title"@en .

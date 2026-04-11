@@ -12,7 +12,7 @@ import {
   type SyncState,
 } from "../core/index.js";
 import { resolveShellLayout } from "./layout.js";
-import { defaultTuiTheme, fillLine } from "./theme.js";
+import { defaultTuiTheme, fillLine, markerForItemKind } from "./theme.js";
 
 export type TuiShellProps = {
   readonly showTopBar?: boolean;
@@ -512,7 +512,7 @@ function renderPerspectiveBody(
                 {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
                 wrap="truncate-end"
               >
-                {selected ? ">" : " "} {item.title}
+                {selected ? ">" : " "} {markerForItemKind(item.kind)} {item.title}
               </Text>
             )}
             {showEditRow && composer.errorMessage ? (

@@ -145,7 +145,7 @@ describe("TuiShell", () => {
       "Focus: 1/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> Older");
+    expect(app.lastFrame()).toContain("> □ Older");
 
     app.stdin.write("j");
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -156,7 +156,7 @@ describe("TuiShell", () => {
       "Focus: 2/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> Newer");
+    expect(app.lastFrame()).toContain("> □ Newer");
 
     app.unmount();
     await services.dispose();
@@ -197,7 +197,7 @@ describe("TuiShell", () => {
       "Focus: 1/1",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> New item");
+    expect(app.lastFrame()).toContain("> □ New item");
 
     await expect(localEngine.listItems()).resolves.toEqual([
       {
@@ -312,6 +312,12 @@ describe("TuiShell", () => {
     app.stdin.write("\r");
     await new Promise((resolve) => setTimeout(resolve, 50));
 
+    expectFrameToContainAll(app.lastFrame(), [
+      "Remember this",
+      "Editor: idle",
+    ]);
+    expect(app.lastFrame()).toContain("> - Remember this");
+
     await expect(localEngine.getItem("item-note")).resolves.toEqual({
       id: "item-note",
       kind: "note",
@@ -344,7 +350,7 @@ describe("TuiShell", () => {
     );
 
     await new Promise((resolve) => setTimeout(resolve, 100));
-    expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", "> First"]);
+    expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", "> □ First"]);
 
     app.stdin.write("e");
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -371,7 +377,7 @@ describe("TuiShell", () => {
       "Focus: 1/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> Renamed");
+    expect(app.lastFrame()).toContain("> □ Renamed");
 
     await expect(localEngine.getItem("item-1")).resolves.toEqual({
       id: "item-1",

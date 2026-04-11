@@ -13,6 +13,14 @@ export type TextStyle = {
     | "white";
 };
 
+export type MarkerRole =
+  | "task.empty"
+  | "task.partial"
+  | "task.done"
+  | "note"
+  | "event"
+  | "message";
+
 export type TuiTheme = {
   readonly text: TextStyle;
   readonly muted: TextStyle;
@@ -21,6 +29,15 @@ export type TuiTheme = {
   readonly error: TextStyle;
   readonly selected: TextStyle;
   readonly topBar: TextStyle;
+};
+
+export const markerVocabulary: Record<MarkerRole, string> = {
+  "task.empty": "□",
+  "task.partial": "◩",
+  "task.done": "■",
+  note: "-",
+  event: "◦",
+  message: "🖂",
 };
 
 export const defaultTuiTheme: TuiTheme = {
@@ -35,4 +52,8 @@ export const defaultTuiTheme: TuiTheme = {
 
 export function fillLine(text: string, columns: number): string {
   return text.padEnd(Math.max(1, columns), " ");
+}
+
+export function markerForItemKind(kind: "task" | "note"): string {
+  return kind === "note" ? markerVocabulary.note : markerVocabulary["task.empty"];
 }

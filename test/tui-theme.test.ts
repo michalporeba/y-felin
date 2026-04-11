@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { defaultTuiTheme, fillLine } from "../src/tui/theme.js";
+import {
+  defaultTuiTheme,
+  fillLine,
+  markerForItemKind,
+  markerVocabulary,
+} from "../src/tui/theme.js";
 
 describe("defaultTuiTheme", () => {
   it("uses inversion for the top bar", () => {
@@ -25,5 +30,19 @@ describe("fillLine", () => {
 
   it("never returns an empty string", () => {
     expect(fillLine("", 0)).toBe(" ");
+  });
+});
+
+describe("marker vocabulary", () => {
+  it("maps live item kinds to leading markers", () => {
+    expect(markerForItemKind("task")).toBe("□");
+    expect(markerForItemKind("note")).toBe("-");
+  });
+
+  it("reserves future markers for task states and entry kinds", () => {
+    expect(markerVocabulary["task.partial"]).toBe("◩");
+    expect(markerVocabulary["task.done"]).toBe("■");
+    expect(markerVocabulary.event).toBe("◦");
+    expect(markerVocabulary.message).toBe("🖂");
   });
 });

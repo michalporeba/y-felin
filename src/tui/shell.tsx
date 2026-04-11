@@ -28,7 +28,7 @@ import {
   type KeymapConfig,
   type TuiActionId,
 } from "./keymap.js";
-import { defaultTuiTheme, fillLine, markerForItemKind } from "./theme.js";
+import { defaultTuiTheme, fillLine, markerForItem } from "./theme.js";
 
 export type TuiShellProps = {
   readonly showTopBar?: boolean;
@@ -276,9 +276,11 @@ export function TuiShell({
       helpMode,
       itemsState,
       selectedIndex,
+      appStore,
       exit,
       setComposer,
       setHelpMode,
+      setItemsState,
       setSelectedIndex,
     });
   });
@@ -441,6 +443,8 @@ function BottomBar({
       ? buildHintLine(activeKeymap, [
           "cursor.up",
           "cursor.down",
+          "entry.workflow.previous",
+          "entry.workflow.next",
           "entry.create.task",
           "entry.create.note",
           "entry.edit",
@@ -603,7 +607,7 @@ function renderPerspectiveBody(
                 {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
                 wrap="truncate-end"
               >
-                {selected ? ">" : " "} {markerForItemKind(item.kind)} {item.title}
+                {selected ? ">" : " "} {markerForItem(item)} {item.title}
               </Text>
             )}
             {showEditRow && composer.errorMessage ? (
@@ -779,6 +783,10 @@ function shortHintForAction(actionId: TuiActionId): string {
       return "task";
     case "entry.create.note":
       return "note";
+    case "entry.workflow.previous":
+      return "left";
+    case "entry.workflow.next":
+      return "right";
     case "entry.edit":
       return "edit";
     case "help.context":
@@ -848,9 +856,11 @@ async function dispatchTuiAction({
   helpMode,
   itemsState,
   selectedIndex,
+  appStore,
   exit,
   setComposer,
   setHelpMode,
+  setItemsState,
   setSelectedIndex,
 }: {
   readonly actionId: TuiActionId;
@@ -861,9 +871,17 @@ async function dispatchTuiAction({
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
+  readonly appStore: AppStore;
   readonly exit: () => void;
   readonly setComposer: React.Dispatch<React.SetStateAction<ComposerState>>;
   readonly setHelpMode: React.Dispatch<React.SetStateAction<HelpMode>>;
+  readonly setItemsState: React.Dispatch<
+    React.SetStateAction<{
+      readonly status: "loading" | "ready" | "error";
+      readonly items: ItemSummary[];
+      readonly errorMessage?: string;
+    }>
+  >;
   readonly setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
 }) {
   switch (actionId) {
@@ -886,6 +904,35 @@ async function dispatchTuiAction({
         setComposer({ mode: "create", kind: "note", value: "" });
       }
       return;
+    case "entry.workflow.previous":
+    case "entry.workflow.next": {
+      if (helpMode !== "none" || itemsState.status !== "ready") {
+        return;
+      }
+      const currentItem = itemsState.items[selectedIndex];
+      if (!currentItem) {
+        return;
+      }
+      const result = await appStore.dispatch(
+        actionId === "entry.workflow.next"
+          ? "items.workflow.next"
+          : "items.workflow.previous",
+        { id: currentItem.id },
+      );
+      if (!result.ok) {
+        return;
+      }
+      setItemsState((current) => ({
+        ...current,
+        items:
+          current.status !== "ready"
+            ? current.items
+            : current.items.map((item) =>
+                item.id === result.value.id ? result.value : item
+              ),
+      }));
+      return;
+    }
     case "entry.edit": {
       if (helpMode !== "none") {
         return;

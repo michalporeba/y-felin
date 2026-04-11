@@ -50,6 +50,8 @@ describe("tui keymap", () => {
     const compiled = compileKeymap(defaultKeymapConfig, "inbox");
 
     expect(primaryBindingForAction(compiled, "app.quit")).toBe("q");
+    expect(primaryBindingForAction(compiled, "entry.workflow.previous")).toBe("h");
+    expect(primaryBindingForAction(compiled, "entry.workflow.next")).toBe("l");
     expect(primaryBindingForAction(compiled, "entry.create.task")).toBe("t");
     expect(primaryBindingForAction(compiled, "entry.create.note")).toBe("n");
     expect(primaryBindingForAction(compiled, "entry.edit")).toBe("e");

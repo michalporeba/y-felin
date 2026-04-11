@@ -34,6 +34,13 @@ mlg:Note
   mlg:symbol "-" ;
   rdfs:subClassOf mlg:JournalEntry .
 
+mlg:Event
+  a owl:Class ;
+  rdfs:label "Event"@en ;
+  rdfs:comment "An event journal entry, representing something that occurs at a specific time."@en ;
+  mlg:symbol "○" ;
+  rdfs:subClassOf mlg:JournalEntry .
+
 mlg:workflowState
   a owl:ObjectProperty ;
   rdfs:label "workflow state"@en ;

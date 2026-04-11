@@ -71,6 +71,7 @@ describe("CLI sync seam", () => {
       kind: "note",
       title: "CLI note",
       createdAt: "2026-04-09T14:00:00.000Z",
+      workflowState: undefined,
     });
 
     await services.dispose();

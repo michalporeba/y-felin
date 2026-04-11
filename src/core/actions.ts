@@ -11,6 +11,8 @@ export type ActionId =
   | "items.list"
   | "items.create"
   | "items.update"
+  | "items.workflow.next"
+  | "items.workflow.previous"
   | "sync.state";
 
 export type ActionMap = {
@@ -41,6 +43,14 @@ export type ActionMap = {
   };
   "items.update": {
     input: { id: string; title: string };
+    output: ItemSummary;
+  };
+  "items.workflow.next": {
+    input: { id: string };
+    output: ItemSummary;
+  };
+  "items.workflow.previous": {
+    input: { id: string };
     output: ItemSummary;
   };
   "sync.state": {

@@ -141,12 +141,14 @@ describe("shared core", () => {
           kind: "task",
           title: "Older",
           createdAt: "2026-04-08T09:00:00.000Z",
+          workflowState: "open",
         },
         {
           id: "item-2",
           kind: "task",
           title: "Newer",
           createdAt: "2026-04-09T09:00:00.000Z",
+          workflowState: "open",
         },
       ],
     });
@@ -178,6 +180,7 @@ describe("shared core", () => {
         kind: "task",
         title: "Created from action",
         createdAt: "2026-04-09T10:00:00.000Z",
+        workflowState: "open",
       },
     });
 
@@ -189,6 +192,7 @@ describe("shared core", () => {
           kind: "task",
           title: "Created from action",
           createdAt: "2026-04-09T10:00:00.000Z",
+          workflowState: "open",
         },
       ],
     });
@@ -222,6 +226,7 @@ describe("shared core", () => {
         kind: "task",
         title: "After edit",
         createdAt: "2026-04-09T10:00:00.000Z",
+        workflowState: "open",
       },
     });
 
@@ -230,6 +235,50 @@ describe("shared core", () => {
       kind: "task",
       title: "After edit",
       createdAt: "2026-04-09T10:00:00.000Z",
+      workflowState: "open",
+    });
+
+    await services.dispose();
+  });
+
+  it("moves task workflow state through the shared action model", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-workflow-"));
+    tempRoots.push(root);
+
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({ localEngine });
+    const store = createAppStore(services);
+
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-workflow",
+      title: "Workflow task",
+      createdAt: "2026-04-09T10:00:00.000Z",
+    });
+
+    await expect(
+      store.dispatch("items.workflow.next", { id: "item-workflow" }),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        id: "item-workflow",
+        kind: "task",
+        title: "Workflow task",
+        createdAt: "2026-04-09T10:00:00.000Z",
+        workflowState: "active",
+      },
+    });
+
+    await expect(
+      store.dispatch("items.workflow.previous", { id: "item-workflow" }),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        id: "item-workflow",
+        kind: "task",
+        title: "Workflow task",
+        createdAt: "2026-04-09T10:00:00.000Z",
+        workflowState: "open",
+      },
     });
 
     await services.dispose();

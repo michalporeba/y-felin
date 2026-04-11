@@ -185,9 +185,9 @@ describe("TuiShell", () => {
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
-      "Actions",
       "Symbols",
       "Create a new task at the bottom of the inbox.",
+      "Move the selected task one workflow step toward done.",
       "Task entry.",
       "Editor: help",
       `${bindingFor("help.global")} full help`,
@@ -209,7 +209,6 @@ describe("TuiShell", () => {
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
-      "Actions",
       "Symbols",
       `${bindingFor("help.global")} full help`,
     ]);
@@ -319,6 +318,7 @@ describe("TuiShell", () => {
         kind: "task",
         title: "New item",
         createdAt: "2026-04-09T12:00:00.000Z",
+        workflowState: "open",
       },
     ]);
 
@@ -437,6 +437,7 @@ describe("TuiShell", () => {
       kind: "note",
       title: "Remember this",
       createdAt: "2026-04-09T13:00:00.000Z",
+      workflowState: undefined,
     });
 
     app.unmount();
@@ -498,6 +499,49 @@ describe("TuiShell", () => {
       kind: "task",
       title: "Renamed",
       createdAt: "2026-04-09T09:00:00.000Z",
+      workflowState: "open",
+    });
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("advances and rewinds task workflow with l and h", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-workflow-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-1",
+      title: "Flow",
+      createdAt: "2026-04-09T09:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+    const app = render(
+      <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
+    );
+
+    await wait(100);
+    expect(app.lastFrame()).toContain("> □ Flow");
+
+    await pressAction(app, "entry.workflow.next");
+    await wait(20);
+    expect(app.lastFrame()).toContain("> ◩ Flow");
+
+    await pressAction(app, "entry.workflow.next");
+    await wait(20);
+    expect(app.lastFrame()).toContain("> ■ Flow");
+
+    await pressAction(app, "entry.workflow.previous");
+    await wait(20);
+    expect(app.lastFrame()).toContain("> ◩ Flow");
+
+    await expect(localEngine.getItem("item-1")).resolves.toEqual({
+      id: "item-1",
+      kind: "task",
+      title: "Flow",
+      createdAt: "2026-04-09T09:00:00.000Z",
+      workflowState: "active",
     });
 
     app.unmount();

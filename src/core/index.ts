@@ -2,8 +2,12 @@ export { describeApp } from "./app.js";
 export type { AppDescriptor, AppSurface } from "./app.js";
 export type { ActionDefinition, ActionId, ActionMap } from "./actions.js";
 export type { AppError, AppErrorCode } from "./errors.js";
-export { compareItemsOldestFirst } from "./items.js";
-export type { ItemKind, ItemSummary } from "./items.js";
+export {
+  advanceWorkflowState,
+  compareItemsOldestFirst,
+  rewindWorkflowState,
+} from "./items.js";
+export type { ItemKind, ItemSummary, WorkflowState } from "./items.js";
 export {
   getPerspective,
   getPerspectiveHelp,

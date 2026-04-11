@@ -5,8 +5,13 @@ import {
   stringValue,
   uri,
   type EntityDefinition,
+  type Triple,
 } from "lofipod";
-import type { ItemKind, ItemSummary } from "../core/index.js";
+import type {
+  ItemKind,
+  ItemSummary,
+  WorkflowState,
+} from "../core/index.js";
 
 const vocabulary = defineVocabulary({
   base: "",
@@ -15,6 +20,10 @@ const vocabulary = defineVocabulary({
     Note: "https://michalporeba.com/ns/lifegraph#Note",
     title: "http://purl.org/dc/terms/title",
     created: "http://purl.org/dc/terms/created",
+    workflowState: "https://michalporeba.com/ns/lifegraph#workflowState",
+    Open: "https://michalporeba.com/ns/lifegraph#Open",
+    Active: "https://michalporeba.com/ns/lifegraph#Active",
+    Done: "https://michalporeba.com/ns/lifegraph#Done",
   },
   uri({ entityName, id }) {
     return `https://melin.app/id/${entityName}/${id}`;
@@ -38,12 +47,21 @@ export const ItemEntity: EntityDefinition<ItemSummary> = defineEntity<ItemSummar
   },
   toRdf(item, helpers) {
     const subject = helpers.uri(item);
-
-    return [
+    const triples: Triple[] = [
       [subject, rdf.type, kindToRdfType(item.kind)],
       [subject, vocabulary.title, item.title],
       [subject, vocabulary.created, item.createdAt],
     ];
+
+    if (item.kind === "task" && item.workflowState) {
+      triples.push([
+        subject,
+        vocabulary.workflowState,
+        workflowStateToRdf(item.workflowState),
+      ]);
+    }
+
+    return triples;
   },
   project(graph, helpers) {
     const subject = helpers.uri();
@@ -54,6 +72,7 @@ export const ItemEntity: EntityDefinition<ItemSummary> = defineEntity<ItemSummar
       kind: rdfTypeToKind(graph, subject),
       title: stringValue(graph, subject, vocabulary.title),
       createdAt: stringValue(graph, subject, vocabulary.created),
+      workflowState: projectWorkflowState(graph, subject),
     };
   },
 });
@@ -63,12 +82,15 @@ export function createDefaultItem(input: {
   readonly kind?: ItemKind;
   readonly title: string;
   readonly createdAt?: string;
+  readonly workflowState?: WorkflowState;
 }): ItemSummary {
   return {
     id: input.id,
     kind: input.kind ?? "task",
     title: input.title,
     createdAt: input.createdAt ?? new Date().toISOString(),
+    workflowState:
+      (input.kind ?? "task") === "task" ? input.workflowState ?? "open" : undefined,
   };
 }
 
@@ -82,6 +104,38 @@ function rdfTypeToKind(
 ): ItemKind {
   const typeValue = stringValue(graph, subject, rdf.type);
   return typeValue === vocabulary.Note.value ? "note" : "task";
+}
+
+function workflowStateToRdf(workflowState: WorkflowState) {
+  switch (workflowState) {
+    case "active":
+      return vocabulary.Active;
+    case "done":
+      return vocabulary.Done;
+    case "open":
+    default:
+      return vocabulary.Open;
+  }
+}
+
+function projectWorkflowState(
+  graph: Parameters<NonNullable<typeof ItemEntity.project>>[0],
+  subject: ReturnType<typeof uri>,
+): WorkflowState | undefined {
+  const kind = rdfTypeToKind(graph, subject);
+  if (kind !== "task") {
+    return undefined;
+  }
+
+  const value = stringValue(graph, subject, vocabulary.workflowState);
+  if (value === vocabulary.Active.value) {
+    return "active";
+  }
+  if (value === vocabulary.Done.value) {
+    return "done";
+  }
+
+  return "open";
 }
 
 export { vocabulary as itemVocabulary, uri as rdfUri };

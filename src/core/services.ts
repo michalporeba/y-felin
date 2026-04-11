@@ -6,9 +6,12 @@ import {
 } from "../local/index.js";
 import { getPerspective, listPerspectives } from "./perspectives.js";
 import {
+  advanceWorkflowState,
   compareItemsOldestFirst,
   type ItemKind,
   type ItemSummary,
+  rewindWorkflowState,
+  type WorkflowState,
 } from "./items.js";
 import type { SyncState } from "./sync.js";
 
@@ -26,6 +29,12 @@ export type AppServices = {
     readonly update: (input: {
       readonly id: string;
       readonly title: string;
+    }) => Promise<ItemSummary>;
+    readonly advanceWorkflow: (input: {
+      readonly id: string;
+    }) => Promise<ItemSummary>;
+    readonly rewindWorkflow: (input: {
+      readonly id: string;
     }) => Promise<ItemSummary>;
   };
   readonly sync: {
@@ -75,6 +84,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           kind,
           title: trimmedTitle,
           createdAt: now(),
+          workflowState: defaultWorkflowState(kind),
         });
       },
       async update({ id, title }) {
@@ -93,6 +103,36 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           title: trimmedTitle,
         });
       },
+      async advanceWorkflow({ id }) {
+        const existing = await requireLocalEngine().getItem(id);
+        if (!existing) {
+          throw new Error(`Unknown item: ${id}`);
+        }
+
+        if (existing.kind !== "task" || !existing.workflowState) {
+          return existing;
+        }
+
+        return requireLocalEngine().saveItem({
+          ...existing,
+          workflowState: advanceWorkflowState(existing.workflowState),
+        });
+      },
+      async rewindWorkflow({ id }) {
+        const existing = await requireLocalEngine().getItem(id);
+        if (!existing) {
+          throw new Error(`Unknown item: ${id}`);
+        }
+
+        if (existing.kind !== "task" || !existing.workflowState) {
+          return existing;
+        }
+
+        return requireLocalEngine().saveItem({
+          ...existing,
+          workflowState: rewindWorkflowState(existing.workflowState),
+        });
+      },
     },
     sync: {
       state() {
@@ -107,4 +147,8 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
       await localEngine.dispose();
     },
   };
+}
+
+function defaultWorkflowState(kind: ItemKind): WorkflowState | undefined {
+  return kind === "task" ? "open" : undefined;
 }

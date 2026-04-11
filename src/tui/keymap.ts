@@ -6,6 +6,8 @@ export type TuiActionId =
   | "help.global"
   | "cursor.down"
   | "cursor.up"
+  | "entry.workflow.previous"
+  | "entry.workflow.next"
   | "entry.create.task"
   | "entry.create.note"
   | "entry.edit";
@@ -40,6 +42,8 @@ export const defaultKeymapConfig: KeymapConfig = {
   },
   perspectives: {
     inbox: {
+      h: "entry.workflow.previous",
+      l: "entry.workflow.next",
       t: "entry.create.task",
       n: "entry.create.note",
       e: "entry.edit",
@@ -53,6 +57,8 @@ const actionDescriptions: Record<TuiActionId, string> = {
   "help.global": "Open the main help document.",
   "cursor.down": "Move the current selection down.",
   "cursor.up": "Move the current selection up.",
+  "entry.workflow.previous": "Move the selected task one workflow step toward open.",
+  "entry.workflow.next": "Move the selected task one workflow step toward done.",
   "entry.create.task": "Create a new task at the bottom of the inbox.",
   "entry.create.note": "Create a new note at the bottom of the inbox.",
   "entry.edit": "Edit the selected entry title in place.",
@@ -62,6 +68,8 @@ const perspectiveActions: Record<PerspectiveId, TuiActionId[]> = {
   inbox: [
     "cursor.down",
     "cursor.up",
+    "entry.workflow.previous",
+    "entry.workflow.next",
     "entry.create.task",
     "entry.create.note",
     "entry.edit",

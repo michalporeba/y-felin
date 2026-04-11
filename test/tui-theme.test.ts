@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   defaultTuiTheme,
   fillLine,
-  markerForItemKind,
+  markerForItem,
   markerVocabulary,
 } from "../src/tui/theme.js";
 
@@ -35,8 +35,10 @@ describe("fillLine", () => {
 
 describe("marker vocabulary", () => {
   it("maps live item kinds to leading markers", () => {
-    expect(markerForItemKind("task")).toBe("□");
-    expect(markerForItemKind("note")).toBe("-");
+    expect(markerForItem({ kind: "task", workflowState: "open" })).toBe("□");
+    expect(markerForItem({ kind: "task", workflowState: "active" })).toBe("◩");
+    expect(markerForItem({ kind: "task", workflowState: "done" })).toBe("■");
+    expect(markerForItem({ kind: "note" })).toBe("-");
   });
 
   it("reserves future markers for task states and entry kinds", () => {

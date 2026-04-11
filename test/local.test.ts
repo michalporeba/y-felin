@@ -61,6 +61,7 @@ describe("local lofipod persistence", () => {
       kind: "task",
       title: "First inbox item",
       createdAt: "2026-04-09T00:00:00.000Z",
+      workflowState: "open",
     });
 
     await expect(first.getItem("item-1")).resolves.toEqual(saved);

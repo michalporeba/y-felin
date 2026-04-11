@@ -54,6 +54,18 @@ const registry = createActionRegistry([
     },
   },
   {
+    id: "items.workflow.next",
+    run(input, services) {
+      return services.items.advanceWorkflow(input);
+    },
+  },
+  {
+    id: "items.workflow.previous",
+    run(input, services) {
+      return services.items.rewindWorkflow(input);
+    },
+  },
+  {
     id: "sync.state",
     run(_input, services) {
       return services.sync.state();

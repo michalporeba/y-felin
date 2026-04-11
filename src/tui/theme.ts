@@ -54,6 +54,21 @@ export function fillLine(text: string, columns: number): string {
   return text.padEnd(Math.max(1, columns), " ");
 }
 
-export function markerForItemKind(kind: "task" | "note"): string {
-  return kind === "note" ? markerVocabulary.note : markerVocabulary["task.empty"];
+export function markerForItem(input: {
+  readonly kind: "task" | "note";
+  readonly workflowState?: "open" | "active" | "done";
+}): string {
+  if (input.kind === "note") {
+    return markerVocabulary.note;
+  }
+
+  if (input.workflowState === "active") {
+    return markerVocabulary["task.partial"];
+  }
+
+  if (input.workflowState === "done") {
+    return markerVocabulary["task.done"];
+  }
+
+  return markerVocabulary["task.empty"];
 }

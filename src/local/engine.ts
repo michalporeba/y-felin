@@ -6,7 +6,7 @@ import {
   type LocalStorageConfig,
   type LocalStorageConfigInput,
 } from "./config.js";
-import type { ItemKind, ItemSummary } from "../core/index.js";
+import type { ItemKind, ItemSummary, WorkflowState } from "../core/index.js";
 import type { SyncState } from "../core/sync.js";
 
 export type MelinLocalEngine = {
@@ -58,6 +58,7 @@ export function createAndSaveDefaultItem(
     readonly kind?: ItemKind;
     readonly title: string;
     readonly createdAt?: string;
+    readonly workflowState?: WorkflowState;
   },
 ): Promise<ItemSummary> {
   return engine.saveItem(createDefaultItem(input));

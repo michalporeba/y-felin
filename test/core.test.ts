@@ -68,8 +68,12 @@ describe("shared core", () => {
             description: "Edit the selected entry title in place.",
           },
           {
-            label: "h",
-            description: "Open or close help for the current perspective.",
+            label: "?",
+            description: "Open contextual help for the current perspective.",
+          },
+          {
+            label: "H",
+            description: "Open the main help document.",
           },
           {
             label: "Esc",

@@ -38,7 +38,8 @@ const perspectiveHelp = {
       { label: "t", description: "Create a new task at the bottom of the inbox." },
       { label: "n", description: "Create a new note at the bottom of the inbox." },
       { label: "e", description: "Edit the selected entry title in place." },
-      { label: "h", description: "Open or close help for the current perspective." },
+      { label: "?", description: "Open contextual help for the current perspective." },
+      { label: "H", description: "Open the main help document." },
       { label: "Esc", description: "Close help or cancel the current editor." },
     ],
     symbols: [

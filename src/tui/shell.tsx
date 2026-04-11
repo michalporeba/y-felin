@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Text, useInput, useWindowSize } from "ink";
+import { Box, Text, useApp, useInput, useWindowSize } from "ink";
 import {
   createAppServices,
   createAppStore,
@@ -48,6 +48,7 @@ export function TuiShell({
 }: TuiShellProps) {
   const [ownedServices] = useState(() => services ?? createAppServices());
   const [appStore] = useState(() => store ?? createAppStore(ownedServices));
+  const { exit } = useApp();
   const windowSize = useWindowSize();
   const columns = dimensions?.columns ?? windowSize.columns;
   const rows = dimensions?.rows ?? windowSize.rows;
@@ -214,6 +215,11 @@ export function TuiShell({
     }
 
     if (helpMode !== "none") {
+      if (_input === "q") {
+        exit();
+        return;
+      }
+
       if (key.escape || _input === "\u001B") {
         setHelpMode("none");
         return;
@@ -224,7 +230,7 @@ export function TuiShell({
         return;
       }
 
-      if (helpMode === "global" && _input === "h") {
+      if (helpMode === "global" && _input === "?") {
         setHelpMode("context");
         return;
       }
@@ -232,7 +238,12 @@ export function TuiShell({
       return;
     }
 
-    if (_input === "h") {
+    if (_input === "q") {
+      exit();
+      return;
+    }
+
+    if (_input === "?") {
       setHelpMode("context");
       return;
     }
@@ -436,9 +447,9 @@ function BottomBar({
     helpMode === "context"
       ? "H full help | Esc close"
       : helpMode === "global"
-        ? "h contextual help | Esc close"
+        ? "? contextual help | Esc close"
       : composer.mode === "idle"
-      ? "j/k move | t task | n note | e edit"
+      ? "j/k move | t task | n note | e edit | ? help | q quit"
       : composer.mode === "edit"
         ? "editing"
         : `creating ${composer.kind ?? "task"}`;
@@ -660,7 +671,7 @@ function GlobalHelpPanel() {
     <Box flexDirection="column" paddingX={2}>
       <Text bold>Help Levels</Text>
       <Text />
-      <Text wrap="truncate-end">h      Open contextual help for the current perspective.</Text>
+      <Text wrap="truncate-end">?      Open contextual help for the current perspective.</Text>
       <Text wrap="truncate-end">H      Open the main help document.</Text>
       <Text wrap="truncate-end">Esc    Close help and return to the previous perspective.</Text>
       <Text />

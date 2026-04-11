@@ -114,11 +114,23 @@ describe("TuiShell", () => {
     app.unmount();
   });
 
-  it("opens contextual help with h, full help with H, and closes with Esc", async () => {
+  it("quits the application with q", async () => {
+    const app = render(<TuiShell dimensions={{ columns: 80, rows: 24 }} />);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(app.lastFrame()).toContain("MELIN");
+
+    app.stdin.write("q");
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    expect(app.lastFrame().trim()).toBe("");
+  });
+
+  it("opens contextual help with ?, full help with H, and closes with Esc", async () => {
     const app = render(<TuiShell dimensions={{ columns: 90, rows: 20 }} />);
 
     await new Promise((resolve) => setTimeout(resolve, 50));
-    app.stdin.write("h");
+    app.stdin.write("?");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     expectFrameToContainAll(app.lastFrame(), [
@@ -139,10 +151,10 @@ describe("TuiShell", () => {
       "Help Levels",
       "Open contextual help for the current perspective.",
       "Open the main help document.",
-      "h contextual he",
+      "? contextual he",
     ]);
 
-    app.stdin.write("h");
+    app.stdin.write("?");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     expectFrameToContainAll(app.lastFrame(), [

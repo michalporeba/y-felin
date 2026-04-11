@@ -17,7 +17,6 @@ export type PerspectiveHelpEntry = {
 export type PerspectiveHelpDefinition = {
   readonly title: string;
   readonly summary: string;
-  readonly actions: readonly PerspectiveHelpEntry[];
   readonly symbols: readonly PerspectiveHelpEntry[];
 };
 
@@ -33,15 +32,6 @@ const perspectiveHelp = {
   inbox: {
     title: "Inbox Help",
     summary: "Actions and symbols for the chronological inbox perspective.",
-    actions: [
-      { label: "j / k", description: "Move the current selection down or up." },
-      { label: "t", description: "Create a new task at the bottom of the inbox." },
-      { label: "n", description: "Create a new note at the bottom of the inbox." },
-      { label: "e", description: "Edit the selected entry title in place." },
-      { label: "?", description: "Open contextual help for the current perspective." },
-      { label: "H", description: "Open the main help document." },
-      { label: "Esc", description: "Close help or cancel the current editor." },
-    ],
     symbols: [
       { label: ">", description: "Marks the currently selected row." },
       { label: "□", description: "Task entry." },

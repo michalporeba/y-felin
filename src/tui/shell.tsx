@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Box, Text, useApp, useInput, useWindowSize } from "ink";
 import {
   createAppServices,
@@ -7,13 +7,27 @@ import {
   getPerspective,
   getPerspectiveHelp,
   type AppServices,
-  type ItemKind,
   type AppStore,
+  type ItemKind,
   type ItemSummary,
   type PerspectiveHelpDefinition,
+  type PerspectiveHelpEntry,
+  type PerspectiveId,
   type SyncState,
 } from "../core/index.js";
 import { resolveShellLayout } from "./layout.js";
+import {
+  compileKeymap,
+  defaultKeymapConfig,
+  getGlobalHelpEntries,
+  getPerspectiveActionHelp,
+  primaryBindingForAction,
+  strokeFromInput,
+  type ActionHelpEntry,
+  type CompiledKeymap,
+  type KeymapConfig,
+  type TuiActionId,
+} from "./keymap.js";
 import { defaultTuiTheme, fillLine, markerForItemKind } from "./theme.js";
 
 export type TuiShellProps = {
@@ -26,6 +40,7 @@ export type TuiShellProps = {
     readonly columns: number;
     readonly rows: number;
   };
+  readonly keymapConfig?: KeymapConfig;
 };
 
 type ComposerState = {
@@ -45,6 +60,7 @@ export function TuiShell({
   services,
   store,
   dimensions,
+  keymapConfig = defaultKeymapConfig,
 }: TuiShellProps) {
   const [ownedServices] = useState(() => services ?? createAppServices());
   const [appStore] = useState(() => store ?? createAppStore(ownedServices));
@@ -63,6 +79,7 @@ export function TuiShell({
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [helpMode, setHelpMode] = useState<HelpMode>("none");
+  const [pendingSequence, setPendingSequence] = useState("");
   const [composer, setComposer] = useState<ComposerState>({
     mode: "idle",
     value: "",
@@ -72,6 +89,17 @@ export function TuiShell({
     configured: false,
     pendingChanges: 0,
   });
+  const perspectiveId = perspectiveResult.ok
+    ? perspectiveResult.value.id
+    : undefined;
+  const activeKeymap = useMemo(
+    () =>
+      compileKeymap(
+        keymapConfig,
+        perspectiveId as PerspectiveId | undefined,
+      ),
+    [keymapConfig, perspectiveId],
+  );
 
   const loadItems = async (): Promise<ItemSummary[] | null> => {
     const result = await appStore.dispatch("items.list", undefined);
@@ -214,91 +242,45 @@ export function TuiShell({
       return;
     }
 
-    if (helpMode !== "none") {
-      if (_input === "q") {
-        exit();
-        return;
-      }
-
-      if (key.escape || _input === "\u001B") {
+    if (key.escape || _input === "\u001B") {
+      setPendingSequence("");
+      if (helpMode !== "none") {
         setHelpMode("none");
-        return;
       }
-
-      if (helpMode === "context" && _input === "H") {
-        setHelpMode("global");
-        return;
-      }
-
-      if (helpMode === "global" && _input === "?") {
-        setHelpMode("context");
-        return;
-      }
-
       return;
     }
 
-    if (_input === "q") {
-      exit();
+    const stroke = strokeFromInput(_input, key);
+    if (!stroke) {
       return;
     }
 
-    if (_input === "?") {
-      setHelpMode("context");
+    const matchedAction = resolveActionFromStroke(
+      stroke,
+      pendingSequence,
+      activeKeymap,
+    );
+
+    if (matchedAction.state === "pending") {
+      setPendingSequence(matchedAction.sequence);
       return;
     }
 
-    if (_input === "H") {
-      setHelpMode("global");
+    setPendingSequence(matchedAction.nextPendingSequence);
+    if (!matchedAction.actionId) {
       return;
     }
 
-    if (_input === "t") {
-      setComposer({
-        mode: "create",
-        kind: "task",
-        value: "",
-      });
-      return;
-    }
-
-    if (_input === "n") {
-      setComposer({
-        mode: "create",
-        kind: "note",
-        value: "",
-      });
-      return;
-    }
-
-    if (itemsState.status !== "ready" || itemsState.items.length === 0) {
-      return;
-    }
-
-    if (_input === "e") {
-      const currentItem = itemsState.items[selectedIndex];
-      if (!currentItem) {
-        return;
-      }
-
-      setComposer({
-        mode: "edit",
-        kind: currentItem.kind,
-        itemId: currentItem.id,
-        value: currentItem.title,
-      });
-      return;
-    }
-
-    if (_input === "j" || key.downArrow) {
-      setSelectedIndex((current) =>
-        Math.min(current + 1, itemsState.items.length - 1),
-      );
-    }
-
-    if (_input === "k" || key.upArrow) {
-      setSelectedIndex((current) => Math.max(current - 1, 0));
-    }
+    void dispatchTuiAction({
+      actionId: matchedAction.actionId,
+      helpMode,
+      itemsState,
+      selectedIndex,
+      exit,
+      setComposer,
+      setHelpMode,
+      setSelectedIndex,
+    });
   });
 
   const layout = resolveShellLayout({
@@ -321,6 +303,7 @@ export function TuiShell({
         selectedIndex={selectedIndex}
         composer={composer}
         helpMode={helpMode}
+        activeKeymap={activeKeymap}
       />
       {showBottomBar ? (
         <BottomBar
@@ -331,6 +314,7 @@ export function TuiShell({
           composer={composer}
           helpMode={helpMode}
           syncState={syncState}
+          activeKeymap={activeKeymap}
         />
       ) : null}
     </Box>
@@ -378,6 +362,7 @@ function MainArea({
   selectedIndex,
   composer,
   helpMode,
+  activeKeymap,
 }: {
   readonly columns: number;
   readonly height: number;
@@ -390,6 +375,7 @@ function MainArea({
   readonly selectedIndex: number;
   readonly composer: ComposerState;
   readonly helpMode: HelpMode;
+  readonly activeKeymap: CompiledKeymap;
 }) {
   return (
     <Box flexDirection="column" width={columns} height={height}>
@@ -405,6 +391,7 @@ function MainArea({
         selectedIndex={selectedIndex}
         composer={composer}
         helpMode={helpMode}
+        activeKeymap={activeKeymap}
       />
     </Box>
   );
@@ -418,6 +405,7 @@ function BottomBar({
   composer,
   helpMode,
   syncState,
+  activeKeymap,
 }: {
   readonly columns: number;
   readonly rows: number;
@@ -430,6 +418,7 @@ function BottomBar({
   readonly composer: ComposerState;
   readonly helpMode: HelpMode;
   readonly syncState: SyncState;
+  readonly activeKeymap: CompiledKeymap;
 }) {
   const focusLabel =
     itemsState.status === "ready" && itemsState.items[selectedIndex]
@@ -445,11 +434,19 @@ function BottomBar({
         : `Editor: new ${composer.kind ?? "task"}`;
   const keyHints =
     helpMode === "context"
-      ? "H full help | Esc close"
+      ? buildHintLine(activeKeymap, ["help.global"], ["Esc close"])
       : helpMode === "global"
-        ? "? contextual help | Esc close"
+        ? buildHintLine(activeKeymap, ["help.context"], ["Esc close"])
       : composer.mode === "idle"
-      ? "j/k move | t task | n note | e edit | ? help | q quit"
+      ? buildHintLine(activeKeymap, [
+          "cursor.up",
+          "cursor.down",
+          "entry.create.task",
+          "entry.create.note",
+          "entry.edit",
+          "help.context",
+          "app.quit",
+        ])
       : composer.mode === "edit"
         ? "editing"
         : `creating ${composer.kind ?? "task"}`;
@@ -500,6 +497,7 @@ function PerspectiveBody(
     selectedIndex,
     composer,
     helpMode,
+    activeKeymap,
   }: {
     readonly perspectiveResult: ReturnType<typeof getPerspective>;
     readonly itemsState: {
@@ -510,6 +508,7 @@ function PerspectiveBody(
     readonly selectedIndex: number;
     readonly composer: ComposerState;
     readonly helpMode: HelpMode;
+    readonly activeKeymap: CompiledKeymap;
   },
 ) {
   const body = renderPerspectiveBody(
@@ -518,6 +517,7 @@ function PerspectiveBody(
     selectedIndex,
     composer,
     helpMode,
+    activeKeymap,
   );
 
   if (typeof body === "string") {
@@ -537,17 +537,23 @@ function renderPerspectiveBody(
   selectedIndex: number,
   composer: ComposerState,
   helpMode: HelpMode,
+  activeKeymap: CompiledKeymap,
 ): React.ReactNode {
   if (!perspectiveResult.ok) {
     return perspectiveResult.error.message;
   }
 
   if (helpMode === "context") {
-    return renderPerspectiveHelp(perspectiveResult.value.id);
+    return renderPerspectiveHelp(perspectiveResult.value.id, activeKeymap);
   }
 
   if (helpMode === "global") {
-    return <GlobalHelpPanel />;
+    return (
+      <GlobalHelpPanel
+        perspectiveId={perspectiveResult.value.id}
+        activeKeymap={activeKeymap}
+      />
+    );
   }
 
   if (itemsState.status === "loading") {
@@ -574,7 +580,7 @@ function renderPerspectiveBody(
         ) : null}
         <Text {...defaultTuiTheme.muted}>Inbox is empty.</Text>
         <Text {...defaultTuiTheme.muted}>
-          Press t for a task or n for a note.
+          {renderEmptyInboxHint(activeKeymap)}
         </Text>
       </Box>
     );
@@ -631,27 +637,45 @@ function renderComposerLine(composer: ComposerState): string {
   return `${promptLabel}> ${composer.value}_`;
 }
 
-function renderPerspectiveHelp(perspectiveId: string): React.ReactNode {
+function renderPerspectiveHelp(
+  perspectiveId: PerspectiveId,
+  keymap: CompiledKeymap,
+): React.ReactNode {
   const helpResult = getPerspectiveHelp(perspectiveId);
   if (!helpResult.ok) {
     return helpResult.error.message;
   }
 
-  return <PerspectiveHelpPanel help={helpResult.value} />;
+  return (
+    <PerspectiveHelpPanel
+      help={helpResult.value}
+      keymap={keymap}
+      perspectiveId={perspectiveId}
+    />
+  );
 }
 
 function PerspectiveHelpPanel({
   help,
+  keymap,
+  perspectiveId,
 }: {
   readonly help: PerspectiveHelpDefinition;
+  readonly keymap: CompiledKeymap;
+  readonly perspectiveId: PerspectiveId;
 }) {
+  const actionEntries = renderActionHelpEntries(
+    getPerspectiveActionHelp(perspectiveId),
+    keymap,
+  );
+
   return (
     <Box flexDirection="column" paddingX={2}>
       <Text bold>Actions</Text>
       <Text />
-      {help.actions.map((entry) => (
+      {actionEntries.map((entry) => (
         <Text key={`action-${entry.label}`} wrap="truncate-end">
-          {entry.label.padEnd(6, " ")} {entry.description}
+          {entry.label.padEnd(10, " ")} {entry.description}
         </Text>
       ))}
       <Text />
@@ -666,21 +690,230 @@ function PerspectiveHelpPanel({
   );
 }
 
-function GlobalHelpPanel() {
+function GlobalHelpPanel({
+  perspectiveId,
+  activeKeymap,
+}: {
+  readonly perspectiveId: PerspectiveId;
+  readonly activeKeymap: CompiledKeymap;
+}) {
+  const globalEntries = renderActionHelpEntries(
+    getGlobalHelpEntries(),
+    activeKeymap,
+  );
+  const perspectiveEntries = renderActionHelpEntries(
+    getPerspectiveActionHelp(perspectiveId),
+    activeKeymap,
+  );
+
   return (
     <Box flexDirection="column" paddingX={2}>
       <Text bold>Help Levels</Text>
       <Text />
-      <Text wrap="truncate-end">?      Open contextual help for the current perspective.</Text>
-      <Text wrap="truncate-end">H      Open the main help document.</Text>
+      {globalEntries.map((entry) => (
+        <Text key={`global-${entry.label}`} wrap="truncate-end">
+          {entry.label.padEnd(10, " ")} {entry.description}
+        </Text>
+      ))}
       <Text wrap="truncate-end">Esc    Close help and return to the previous perspective.</Text>
       <Text />
-      <Text bold>Inbox</Text>
+      <Text bold>{perspectiveId[0]!.toUpperCase() + perspectiveId.slice(1)}</Text>
       <Text />
-      <Text wrap="truncate-end">j / k  Move the current selection down or up.</Text>
-      <Text wrap="truncate-end">t      Create a new task at the bottom of the inbox.</Text>
-      <Text wrap="truncate-end">n      Create a new note at the bottom of the inbox.</Text>
-      <Text wrap="truncate-end">e      Edit the selected entry title in place.</Text>
+      {perspectiveEntries.map((entry) => (
+        <Text key={`perspective-${entry.label}`} wrap="truncate-end">
+          {entry.label.padEnd(10, " ")} {entry.description}
+        </Text>
+      ))}
     </Box>
   );
+}
+
+function renderActionHelpEntries(
+  entries: readonly ActionHelpEntry[],
+  keymap: CompiledKeymap,
+): PerspectiveHelpEntry[] {
+  return entries.flatMap((entry) => {
+    const label = primaryBindingForAction(keymap, entry.actionId);
+    if (!label) {
+      return [];
+    }
+
+    return [{ label, description: entry.description }];
+  });
+}
+
+function renderEmptyInboxHint(keymap: CompiledKeymap): string {
+  const taskBinding = primaryBindingForAction(keymap, "entry.create.task");
+  const noteBinding = primaryBindingForAction(keymap, "entry.create.note");
+  if (taskBinding && noteBinding) {
+    return `Press ${taskBinding} for a task or ${noteBinding} for a note.`;
+  }
+
+  return "Use the configured create bindings to add a task or note.";
+}
+
+function buildHintLine(
+  keymap: CompiledKeymap,
+  actionIds: readonly TuiActionId[],
+  extraHints: readonly string[] = [],
+): string {
+  const hints = actionIds.flatMap((actionId) => {
+    const binding = primaryBindingForAction(keymap, actionId);
+    if (!binding) {
+      return [];
+    }
+
+    return [`${binding} ${shortHintForAction(actionId)}`];
+  });
+
+  return [...hints, ...extraHints].join(" | ");
+}
+
+function shortHintForAction(actionId: TuiActionId): string {
+  switch (actionId) {
+    case "cursor.up":
+      return "up";
+    case "cursor.down":
+      return "down";
+    case "entry.create.task":
+      return "task";
+    case "entry.create.note":
+      return "note";
+    case "entry.edit":
+      return "edit";
+    case "help.context":
+      return "help";
+    case "help.global":
+      return "full help";
+    case "app.quit":
+      return "quit";
+  }
+}
+
+function resolveActionFromStroke(
+  stroke: string,
+  pendingSequence: string,
+  keymap: CompiledKeymap,
+): {
+  readonly state: "matched" | "pending" | "unmatched";
+  readonly actionId?: TuiActionId;
+  readonly sequence: string;
+  readonly nextPendingSequence: string;
+} {
+  const attempt = pendingSequence ? `${pendingSequence} ${stroke}` : stroke;
+
+  if (keymap.bindings.has(attempt)) {
+    return {
+      state: "matched",
+      actionId: keymap.bindings.get(attempt),
+      sequence: attempt,
+      nextPendingSequence: "",
+    };
+  }
+
+  if (keymap.prefixes.has(attempt)) {
+    return {
+      state: "pending",
+      sequence: attempt,
+      nextPendingSequence: attempt,
+    };
+  }
+
+  if (pendingSequence && keymap.bindings.has(stroke)) {
+    return {
+      state: "matched",
+      actionId: keymap.bindings.get(stroke),
+      sequence: stroke,
+      nextPendingSequence: "",
+    };
+  }
+
+  if (pendingSequence && keymap.prefixes.has(stroke)) {
+    return {
+      state: "pending",
+      sequence: stroke,
+      nextPendingSequence: stroke,
+    };
+  }
+
+  return {
+    state: "unmatched",
+    sequence: attempt,
+    nextPendingSequence: "",
+  };
+}
+
+async function dispatchTuiAction({
+  actionId,
+  helpMode,
+  itemsState,
+  selectedIndex,
+  exit,
+  setComposer,
+  setHelpMode,
+  setSelectedIndex,
+}: {
+  readonly actionId: TuiActionId;
+  readonly helpMode: HelpMode;
+  readonly itemsState: {
+    readonly status: "loading" | "ready" | "error";
+    readonly items: ItemSummary[];
+    readonly errorMessage?: string;
+  };
+  readonly selectedIndex: number;
+  readonly exit: () => void;
+  readonly setComposer: React.Dispatch<React.SetStateAction<ComposerState>>;
+  readonly setHelpMode: React.Dispatch<React.SetStateAction<HelpMode>>;
+  readonly setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  switch (actionId) {
+    case "app.quit":
+      exit();
+      return;
+    case "help.context":
+      setHelpMode("context");
+      return;
+    case "help.global":
+      setHelpMode("global");
+      return;
+    case "entry.create.task":
+      if (helpMode === "none") {
+        setComposer({ mode: "create", kind: "task", value: "" });
+      }
+      return;
+    case "entry.create.note":
+      if (helpMode === "none") {
+        setComposer({ mode: "create", kind: "note", value: "" });
+      }
+      return;
+    case "entry.edit": {
+      if (helpMode !== "none") {
+        return;
+      }
+      const currentItem =
+        itemsState.status === "ready" ? itemsState.items[selectedIndex] : undefined;
+      if (!currentItem) {
+        return;
+      }
+      setComposer({
+        mode: "edit",
+        kind: currentItem.kind,
+        itemId: currentItem.id,
+        value: currentItem.title,
+      });
+      return;
+    }
+    case "cursor.down":
+      if (helpMode === "none" && itemsState.status === "ready") {
+        setSelectedIndex((current) =>
+          Math.min(current + 1, itemsState.items.length - 1),
+        );
+      }
+      return;
+    case "cursor.up":
+      if (helpMode === "none" && itemsState.status === "ready") {
+        setSelectedIndex((current) => Math.max(current - 1, 0));
+      }
+      return;
+  }
 }

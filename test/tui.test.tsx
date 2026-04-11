@@ -7,6 +7,13 @@ import path from "node:path";
 import { resolveShellLayout } from "../src/tui/layout.js";
 import { TuiShell } from "../src/tui/shell.js";
 import {
+  compileKeymap,
+  defaultKeymapConfig,
+  primaryBindingForAction,
+  type KeymapConfig,
+  type TuiActionId,
+} from "../src/tui/keymap.js";
+import {
   createAndSaveDefaultItem,
   createAppServices,
   createLocalEngine,
@@ -15,6 +22,49 @@ import {
 function expectFrameToContainAll(frame: string, anchors: string[]) {
   for (const anchor of anchors) {
     expect(frame).toContain(anchor);
+  }
+}
+
+const inboxKeymap = compileKeymap(defaultKeymapConfig, "inbox");
+
+function bindingFor(actionId: TuiActionId, config?: KeymapConfig): string {
+  const compiled = config
+    ? compileKeymap(config, "inbox")
+    : inboxKeymap;
+  const binding = primaryBindingForAction(compiled, actionId);
+  if (!binding) {
+    throw new Error(`Missing binding for action: ${actionId}`);
+  }
+
+  return binding;
+}
+
+async function wait(ms = 20) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function pressAction(
+  app: ReturnType<typeof render>,
+  actionId: TuiActionId,
+  config?: KeymapConfig,
+) {
+  await pressBinding(app, bindingFor(actionId, config));
+}
+
+async function pressBinding(app: ReturnType<typeof render>, binding: string) {
+  for (const stroke of binding.split(" ")) {
+    if (stroke === "<esc>") {
+      app.stdin.write("\u001B");
+    } else if (stroke === "<enter>") {
+      app.stdin.write("\r");
+    } else if (stroke === "<space>") {
+      app.stdin.write(" ");
+    } else if (stroke.length === 1) {
+      app.stdin.write(stroke);
+    } else {
+      throw new Error(`Unsupported test stroke: ${stroke}`);
+    }
+    await wait(10);
   }
 }
 
@@ -117,11 +167,11 @@ describe("TuiShell", () => {
   it("quits the application with q", async () => {
     const app = render(<TuiShell dimensions={{ columns: 80, rows: 24 }} />);
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await wait();
     expect(app.lastFrame()).toContain("MELIN");
 
-    app.stdin.write("q");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await pressAction(app, "app.quit");
+    await wait();
 
     expect(app.lastFrame().trim()).toBe("");
   });
@@ -129,9 +179,9 @@ describe("TuiShell", () => {
   it("opens contextual help with ?, full help with H, and closes with Esc", async () => {
     const app = render(<TuiShell dimensions={{ columns: 90, rows: 20 }} />);
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    app.stdin.write("?");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await wait(50);
+    await pressAction(app, "help.context");
+    await wait();
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
@@ -140,32 +190,32 @@ describe("TuiShell", () => {
       "Create a new task at the bottom of the inbox.",
       "Task entry.",
       "Editor: help",
-      "H full help | E",
+      `${bindingFor("help.global")} full help`,
     ]);
 
-    app.stdin.write("H");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await pressAction(app, "help.global");
+    await wait();
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Help]",
-      "Help Levels",
       "Open contextual help for the current perspective.",
       "Open the main help document.",
-      "? contextual he",
+      `${bindingFor("help.context")}`,
+      `${bindingFor("help.global")}`,
     ]);
 
-    app.stdin.write("?");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await pressAction(app, "help.context");
+    await wait();
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
       "Actions",
       "Symbols",
-      "H full help | E",
+      `${bindingFor("help.global")} full help`,
     ]);
 
     app.stdin.write("\u001B");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await wait();
 
     expect(app.lastFrame()).not.toContain("[Inbox Help]");
     expect(app.lastFrame()).not.toContain("[Help]");
@@ -200,7 +250,7 @@ describe("TuiShell", () => {
       />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await wait(100);
 
     expectFrameToContainAll(app.lastFrame(), [
       "items 2",
@@ -211,8 +261,8 @@ describe("TuiShell", () => {
     ]);
     expect(app.lastFrame()).toContain("> □ Older");
 
-    app.stdin.write("j");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await pressAction(app, "cursor.down");
+    await wait(10);
 
     expectFrameToContainAll(app.lastFrame(), [
       "Newer",
@@ -239,21 +289,21 @@ describe("TuiShell", () => {
       <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
-    app.stdin.write("t");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await pressAction(app, "entry.create.task");
+    await wait(10);
     expectFrameToContainAll(app.lastFrame(), [
       "new task>",
       "Editor: new task",
     ]);
 
     app.stdin.write("New item");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await wait(10);
     expect(app.lastFrame()).toContain("new task> New item_");
 
     app.stdin.write("\r");
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
     expectFrameToContainAll(app.lastFrame(), [
       "items 1",
@@ -301,9 +351,9 @@ describe("TuiShell", () => {
       <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    app.stdin.write("t");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await wait(100);
+    await pressAction(app, "entry.create.task");
+    await wait(20);
 
     const frame = app.lastFrame();
     const thirdIndex = frame.indexOf("Third");
@@ -326,22 +376,22 @@ describe("TuiShell", () => {
       <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
-    app.stdin.write("t");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await pressAction(app, "entry.create.task");
+    await wait(10);
     app.stdin.write("Discard me");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await wait(10);
     expect(app.lastFrame()).toContain("new task> Discard me_");
 
     app.stdin.write("\u001B");
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
     expect(app.lastFrame()).not.toContain("new task> Discard me_");
     expectFrameToContainAll(app.lastFrame(), [
       "Inbox is empty.",
       "Editor: idle",
-      "Press t for a task or n for a note.",
+      `Press ${bindingFor("entry.create.task")} for a task or ${bindingFor("entry.create.note")} for a note.`,
     ]);
     await expect(localEngine.listItems()).resolves.toEqual([]);
 
@@ -362,19 +412,19 @@ describe("TuiShell", () => {
       <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
-    app.stdin.write("n");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await pressAction(app, "entry.create.note");
+    await wait(10);
     expectFrameToContainAll(app.lastFrame(), [
       "new note>",
       "Editor: new note",
     ]);
 
     app.stdin.write("Remember this");
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await wait(10);
     app.stdin.write("\r");
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
     expectFrameToContainAll(app.lastFrame(), [
       "Remember this",
@@ -413,11 +463,11 @@ describe("TuiShell", () => {
       <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await wait(100);
     expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", "> □ First"]);
 
-    app.stdin.write("e");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await pressAction(app, "entry.edit");
+    await wait(20);
     expectFrameToContainAll(app.lastFrame(), [
       "edit task> First_",
       "Editor: edit task",
@@ -426,15 +476,15 @@ describe("TuiShell", () => {
 
     for (let index = 0; index < "First".length; index += 1) {
       app.stdin.write("\u007F");
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await wait(5);
     }
     app.stdin.write("Renamed");
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await wait(20);
 
     expect(app.lastFrame()).toContain("edit task> Renamed_");
 
     app.stdin.write("\r");
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await wait(50);
 
     expectFrameToContainAll(app.lastFrame(), [
       "Renamed",
@@ -449,6 +499,103 @@ describe("TuiShell", () => {
       title: "Renamed",
       createdAt: "2026-04-09T09:00:00.000Z",
     });
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("renders help and actions from a custom keymap configuration", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-keymap-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({ localEngine });
+    const customKeymap: KeymapConfig = {
+      leader: "<space>",
+      global: {
+        j: "cursor.down",
+        k: "cursor.up",
+        x: "app.quit",
+        "/": "help.context",
+        G: "help.global",
+      },
+      perspectives: {
+        inbox: {
+          a: "entry.create.task",
+          m: "entry.create.note",
+          r: "entry.edit",
+        },
+      },
+    };
+
+    const app = render(
+      <TuiShell
+        dimensions={{ columns: 90, rows: 20 }}
+        keymapConfig={customKeymap}
+        services={services}
+      />,
+    );
+
+    await wait(50);
+    await pressAction(app, "help.context", customKeymap);
+    await wait();
+
+    expectFrameToContainAll(app.lastFrame(), [
+      "[Inbox Help]",
+      "a          ",
+      "Create a new task at the bottom of the inbox.",
+      "m          ",
+      "Create a new note at the bottom of the inbox.",
+      "/          Open contextual help for the current perspective.",
+      "G          Open the main help document.",
+    ]);
+
+    app.stdin.write("\u001B");
+    await wait();
+    await pressAction(app, "entry.create.task", customKeymap);
+    await wait();
+
+    expectFrameToContainAll(app.lastFrame(), [
+      "new task>",
+      "Editor: new task",
+    ]);
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("shows global help using the active bindings when a perspective overrides a global key", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-help-override-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({ localEngine });
+    const customKeymap: KeymapConfig = {
+      leader: "<space>",
+      global: {
+        q: "app.quit",
+        "?": "help.context",
+        H: "help.global",
+      },
+      perspectives: {
+        inbox: {
+          q: "entry.create.task",
+        },
+      },
+    };
+
+    const app = render(
+      <TuiShell
+        dimensions={{ columns: 90, rows: 20 }}
+        keymapConfig={customKeymap}
+        services={services}
+      />,
+    );
+
+    await wait(50);
+    await pressAction(app, "help.global", customKeymap);
+    await wait();
+
+    expect(app.lastFrame()).toContain("q          Create a new task at the bottom of the inbox.");
+    expect(app.lastFrame()).not.toContain("q          Quit the application.");
 
     app.unmount();
     await services.dispose();

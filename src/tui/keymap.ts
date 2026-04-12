@@ -8,6 +8,7 @@ export type TuiActionId =
   | "cursor.up"
   | "entry.workflow.previous"
   | "entry.workflow.next"
+  | "entry.priority.toggle"
   | "entry.create.task"
   | "entry.create.note"
   | "entry.edit";
@@ -44,6 +45,7 @@ export const defaultKeymapConfig: KeymapConfig = {
     inbox: {
       h: "entry.workflow.previous",
       l: "entry.workflow.next",
+      p: "entry.priority.toggle",
       t: "entry.create.task",
       n: "entry.create.note",
       e: "entry.edit",
@@ -59,6 +61,7 @@ const actionDescriptions: Record<TuiActionId, string> = {
   "cursor.up": "Move the current selection up.",
   "entry.workflow.previous": "Move the selected task one workflow step toward open.",
   "entry.workflow.next": "Move the selected task one workflow step toward done.",
+  "entry.priority.toggle": "Toggle the selected entry between normal and high priority.",
   "entry.create.task": "Create a new task at the bottom of the inbox.",
   "entry.create.note": "Create a new note at the bottom of the inbox.",
   "entry.edit": "Edit the selected entry title in place.",
@@ -70,6 +73,7 @@ const perspectiveActions: Record<PerspectiveId, TuiActionId[]> = {
     "cursor.up",
     "entry.workflow.previous",
     "entry.workflow.next",
+    "entry.priority.toggle",
     "entry.create.task",
     "entry.create.note",
     "entry.edit",

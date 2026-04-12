@@ -28,7 +28,12 @@ import {
   type KeymapConfig,
   type TuiActionId,
 } from "./keymap.js";
-import { defaultTuiTheme, fillLine, markerForItem } from "./theme.js";
+import {
+  defaultTuiTheme,
+  fillLine,
+  markerForItem,
+  priorityMarker,
+} from "./theme.js";
 
 export type TuiShellProps = {
   readonly showTopBar?: boolean;
@@ -445,6 +450,7 @@ function BottomBar({
           "cursor.down",
           "entry.workflow.previous",
           "entry.workflow.next",
+          "entry.priority.toggle",
           "entry.create.task",
           "entry.create.note",
           "entry.edit",
@@ -607,7 +613,7 @@ function renderPerspectiveBody(
                 {...(selected ? defaultTuiTheme.selected : defaultTuiTheme.text)}
                 wrap="truncate-end"
               >
-                {selected ? ">" : " "} {markerForItem(item)} {item.title}
+                {renderItemPrefix(item, selected)}{item.title}
               </Text>
             )}
             {showEditRow && composer.errorMessage ? (
@@ -639,6 +645,20 @@ function renderComposerLine(composer: ComposerState): string {
   const promptLabel =
     composer.mode === "edit" ? `edit ${kindLabel}` : `new ${kindLabel}`;
   return `${promptLabel}> ${composer.value}_`;
+}
+
+function renderItemPrefix(
+  item: ItemSummary,
+  selected: boolean,
+): string {
+  const active = selected ? ">" : " ";
+  const spacer = " ";
+  const priority = priorityMarker({ priority: item.priority });
+  const main = markerForItem(item);
+  const secondary = " ";
+  const trailing = " ";
+
+  return `${active}${spacer}${priority}${main}${secondary}${trailing}`;
 }
 
 function renderPerspectiveHelp(
@@ -787,6 +807,8 @@ function shortHintForAction(actionId: TuiActionId): string {
       return "left";
     case "entry.workflow.next":
       return "right";
+    case "entry.priority.toggle":
+      return "priority";
     case "entry.edit":
       return "edit";
     case "help.context":
@@ -796,6 +818,8 @@ function shortHintForAction(actionId: TuiActionId): string {
     case "app.quit":
       return "quit";
   }
+
+  return actionId;
 }
 
 function resolveActionFromStroke(
@@ -919,6 +943,31 @@ async function dispatchTuiAction({
           : "items.workflow.previous",
         { id: currentItem.id },
       );
+      if (!result.ok) {
+        return;
+      }
+      setItemsState((current) => ({
+        ...current,
+        items:
+          current.status !== "ready"
+            ? current.items
+            : current.items.map((item) =>
+                item.id === result.value.id ? result.value : item
+              ),
+      }));
+      return;
+    }
+    case "entry.priority.toggle": {
+      if (helpMode !== "none" || itemsState.status !== "ready") {
+        return;
+      }
+      const currentItem = itemsState.items[selectedIndex];
+      if (!currentItem) {
+        return;
+      }
+      const result = await appStore.dispatch("items.priority.toggle", {
+        id: currentItem.id,
+      });
       if (!result.ok) {
         return;
       }

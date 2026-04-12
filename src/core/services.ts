@@ -10,6 +10,7 @@ import {
   compareItemsOldestFirst,
   type ItemKind,
   type ItemSummary,
+  type PriorityLevel,
   rewindWorkflowState,
   type WorkflowState,
 } from "./items.js";
@@ -34,6 +35,9 @@ export type AppServices = {
       readonly id: string;
     }) => Promise<ItemSummary>;
     readonly rewindWorkflow: (input: {
+      readonly id: string;
+    }) => Promise<ItemSummary>;
+    readonly togglePriority: (input: {
       readonly id: string;
     }) => Promise<ItemSummary>;
   };
@@ -84,6 +88,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           kind,
           title: trimmedTitle,
           createdAt: now(),
+          priority: "normal",
           workflowState: defaultWorkflowState(kind),
         });
       },
@@ -131,6 +136,17 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         return requireLocalEngine().saveItem({
           ...existing,
           workflowState: rewindWorkflowState(existing.workflowState),
+        });
+      },
+      async togglePriority({ id }) {
+        const existing = await requireLocalEngine().getItem(id);
+        if (!existing) {
+          throw new Error(`Unknown item: ${id}`);
+        }
+
+        return requireLocalEngine().saveItem({
+          ...existing,
+          priority: existing.priority === "high" ? "normal" : "high",
         });
       },
     },

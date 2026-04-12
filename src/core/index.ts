@@ -7,7 +7,7 @@ export {
   compareItemsOldestFirst,
   rewindWorkflowState,
 } from "./items.js";
-export type { ItemKind, ItemSummary, WorkflowState } from "./items.js";
+export type { ItemKind, ItemSummary, PriorityLevel, WorkflowState } from "./items.js";
 export {
   getPerspective,
   getPerspectiveHelp,

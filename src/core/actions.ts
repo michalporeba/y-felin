@@ -13,6 +13,7 @@ export type ActionId =
   | "items.update"
   | "items.workflow.next"
   | "items.workflow.previous"
+  | "items.priority.toggle"
   | "sync.state";
 
 export type ActionMap = {
@@ -50,6 +51,10 @@ export type ActionMap = {
     output: ItemSummary;
   };
   "items.workflow.previous": {
+    input: { id: string };
+    output: ItemSummary;
+  };
+  "items.priority.toggle": {
     input: { id: string };
     output: ItemSummary;
   };

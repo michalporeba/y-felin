@@ -185,9 +185,7 @@ describe("TuiShell", () => {
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
-      "Symbols",
-      "Create a new task at the bottom of the inbox.",
-      "Move the selected task one workflow step toward done.",
+      "Toggle the selected entry between normal and high priority.",
       "Task entry.",
       "Editor: help",
       `${bindingFor("help.global")} full help`,
@@ -209,7 +207,6 @@ describe("TuiShell", () => {
 
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox Help]",
-      "Symbols",
       `${bindingFor("help.global")} full help`,
     ]);
 
@@ -258,7 +255,7 @@ describe("TuiShell", () => {
       "Focus: 1/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> □ Older");
+    expect(app.lastFrame()).toContain(">  □  Older");
 
     await pressAction(app, "cursor.down");
     await wait(10);
@@ -269,7 +266,7 @@ describe("TuiShell", () => {
       "Focus: 2/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> □ Newer");
+    expect(app.lastFrame()).toContain(">  □  Newer");
 
     app.unmount();
     await services.dispose();
@@ -310,7 +307,7 @@ describe("TuiShell", () => {
       "Focus: 1/1",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> □ New item");
+    expect(app.lastFrame()).toContain(">  □  New item");
 
     await expect(localEngine.listItems()).resolves.toEqual([
       {
@@ -318,6 +315,7 @@ describe("TuiShell", () => {
         kind: "task",
         title: "New item",
         createdAt: "2026-04-09T12:00:00.000Z",
+        priority: "normal",
         workflowState: "open",
       },
     ]);
@@ -430,13 +428,14 @@ describe("TuiShell", () => {
       "Remember this",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> - Remember this");
+    expect(app.lastFrame()).toContain(">  -  Remember this");
 
     await expect(localEngine.getItem("item-note")).resolves.toEqual({
       id: "item-note",
       kind: "note",
       title: "Remember this",
       createdAt: "2026-04-09T13:00:00.000Z",
+      priority: "normal",
       workflowState: undefined,
     });
 
@@ -465,7 +464,7 @@ describe("TuiShell", () => {
     );
 
     await wait(100);
-    expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", "> □ First"]);
+    expectFrameToContainAll(app.lastFrame(), ["Focus: 1/2", ">  □  First"]);
 
     await pressAction(app, "entry.edit");
     await wait(20);
@@ -492,13 +491,14 @@ describe("TuiShell", () => {
       "Focus: 1/2",
       "Editor: idle",
     ]);
-    expect(app.lastFrame()).toContain("> □ Renamed");
+    expect(app.lastFrame()).toContain(">  □  Renamed");
 
     await expect(localEngine.getItem("item-1")).resolves.toEqual({
       id: "item-1",
       kind: "task",
       title: "Renamed",
       createdAt: "2026-04-09T09:00:00.000Z",
+      priority: "normal",
       workflowState: "open",
     });
 
@@ -522,26 +522,66 @@ describe("TuiShell", () => {
     );
 
     await wait(100);
-    expect(app.lastFrame()).toContain("> □ Flow");
+    expect(app.lastFrame()).toContain(">  □  Flow");
 
     await pressAction(app, "entry.workflow.next");
     await wait(20);
-    expect(app.lastFrame()).toContain("> ◩ Flow");
+    expect(app.lastFrame()).toContain(">  ◩  Flow");
 
     await pressAction(app, "entry.workflow.next");
     await wait(20);
-    expect(app.lastFrame()).toContain("> ■ Flow");
+    expect(app.lastFrame()).toContain(">  ■  Flow");
 
     await pressAction(app, "entry.workflow.previous");
     await wait(20);
-    expect(app.lastFrame()).toContain("> ◩ Flow");
+    expect(app.lastFrame()).toContain(">  ◩  Flow");
 
     await expect(localEngine.getItem("item-1")).resolves.toEqual({
       id: "item-1",
       kind: "task",
       title: "Flow",
       createdAt: "2026-04-09T09:00:00.000Z",
+      priority: "normal",
       workflowState: "active",
+    });
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("toggles task priority with p", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-priority-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "item-1",
+      title: "Priority",
+      createdAt: "2026-04-09T09:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+    const app = render(
+      <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
+    );
+
+    await wait(100);
+    expect(app.lastFrame()).toContain(">  □  Priority");
+
+    await pressAction(app, "entry.priority.toggle");
+    await wait(20);
+    expect(app.lastFrame()).toContain("> *□  Priority");
+
+    await pressAction(app, "entry.priority.toggle");
+    await wait(20);
+    expect(app.lastFrame()).toContain(">  □  Priority");
+
+    await expect(localEngine.getItem("item-1")).resolves.toEqual({
+      id: "item-1",
+      kind: "task",
+      title: "Priority",
+      createdAt: "2026-04-09T09:00:00.000Z",
+      priority: "normal",
+      workflowState: "open",
     });
 
     app.unmount();

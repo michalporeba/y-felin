@@ -1,11 +1,13 @@
 export type ItemKind = "task" | "note";
 export type WorkflowState = "open" | "active" | "done";
+export type PriorityLevel = "normal" | "high";
 
 export type ItemSummary = {
   readonly id: string;
   readonly kind: ItemKind;
   readonly title: string;
   readonly createdAt: string;
+  readonly priority?: PriorityLevel;
   readonly workflowState?: WorkflowState;
 };
 

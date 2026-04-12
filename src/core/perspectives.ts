@@ -34,6 +34,7 @@ const perspectiveHelp = {
     summary: "Actions and symbols for the chronological inbox perspective.",
     symbols: [
       { label: ">", description: "Marks the currently selected row." },
+      { label: "*", description: "Marks a high-priority entry." },
       { label: "□", description: "Task entry." },
       { label: "-", description: "Note entry." },
     ],

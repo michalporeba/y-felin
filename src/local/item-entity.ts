@@ -10,6 +10,7 @@ import {
 import type {
   ItemKind,
   ItemSummary,
+  PriorityLevel,
   WorkflowState,
 } from "../core/index.js";
 
@@ -20,10 +21,13 @@ const vocabulary = defineVocabulary({
     Note: "https://michalporeba.com/ns/lifegraph#Note",
     title: "http://purl.org/dc/terms/title",
     created: "http://purl.org/dc/terms/created",
+    priority: "https://michalporeba.com/ns/lifegraph#priority",
     workflowState: "https://michalporeba.com/ns/lifegraph#workflowState",
     Open: "https://michalporeba.com/ns/lifegraph#Open",
     Active: "https://michalporeba.com/ns/lifegraph#Active",
     Done: "https://michalporeba.com/ns/lifegraph#Done",
+    HighPriority: "https://michalporeba.com/ns/lifegraph#HighPriority",
+    NormalPriority: "https://michalporeba.com/ns/lifegraph#NormalPriority",
   },
   uri({ entityName, id }) {
     return `https://melin.app/id/${entityName}/${id}`;
@@ -47,11 +51,15 @@ export const ItemEntity: EntityDefinition<ItemSummary> = defineEntity<ItemSummar
   },
   toRdf(item, helpers) {
     const subject = helpers.uri(item);
-    const triples: Triple[] = [
-      [subject, rdf.type, kindToRdfType(item.kind)],
-      [subject, vocabulary.title, item.title],
-      [subject, vocabulary.created, item.createdAt],
-    ];
+    const triples: Triple[] = [];
+    triples.push([subject, rdf.type, kindToRdfType(item.kind)]);
+    triples.push([subject, vocabulary.title, item.title]);
+    triples.push([subject, vocabulary.created, item.createdAt]);
+    triples.push([
+      subject,
+      vocabulary.priority,
+      priorityToRdf(item.priority ?? "normal"),
+    ]);
 
     if (item.kind === "task" && item.workflowState) {
       triples.push([
@@ -72,6 +80,7 @@ export const ItemEntity: EntityDefinition<ItemSummary> = defineEntity<ItemSummar
       kind: rdfTypeToKind(graph, subject),
       title: stringValue(graph, subject, vocabulary.title),
       createdAt: stringValue(graph, subject, vocabulary.created),
+      priority: projectPriority(graph, subject),
       workflowState: projectWorkflowState(graph, subject),
     };
   },
@@ -82,6 +91,7 @@ export function createDefaultItem(input: {
   readonly kind?: ItemKind;
   readonly title: string;
   readonly createdAt?: string;
+  readonly priority?: PriorityLevel;
   readonly workflowState?: WorkflowState;
 }): ItemSummary {
   return {
@@ -89,6 +99,7 @@ export function createDefaultItem(input: {
     kind: input.kind ?? "task",
     title: input.title,
     createdAt: input.createdAt ?? new Date().toISOString(),
+    priority: input.priority ?? "normal",
     workflowState:
       (input.kind ?? "task") === "task" ? input.workflowState ?? "open" : undefined,
   };
@@ -116,6 +127,18 @@ function workflowStateToRdf(workflowState: WorkflowState) {
     default:
       return vocabulary.Open;
   }
+}
+
+function priorityToRdf(priority: PriorityLevel) {
+  return priority === "high" ? vocabulary.HighPriority : vocabulary.NormalPriority;
+}
+
+function projectPriority(
+  graph: Parameters<NonNullable<typeof ItemEntity.project>>[0],
+  subject: ReturnType<typeof uri>,
+): PriorityLevel {
+  const value = stringValue(graph, subject, vocabulary.priority);
+  return value === vocabulary.HighPriority.value ? "high" : "normal";
 }
 
 function projectWorkflowState(

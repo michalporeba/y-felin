@@ -52,6 +52,7 @@ describe("shared core", () => {
         summary: "Actions and symbols for the chronological inbox perspective.",
         symbols: [
           { label: ">", description: "Marks the currently selected row." },
+          { label: "*", description: "Marks a high-priority entry." },
           { label: "□", description: "Task entry." },
           { label: "-", description: "Note entry." },
         ],
@@ -141,6 +142,7 @@ describe("shared core", () => {
           kind: "task",
           title: "Older",
           createdAt: "2026-04-08T09:00:00.000Z",
+          priority: "normal",
           workflowState: "open",
         },
         {
@@ -148,6 +150,7 @@ describe("shared core", () => {
           kind: "task",
           title: "Newer",
           createdAt: "2026-04-09T09:00:00.000Z",
+          priority: "normal",
           workflowState: "open",
         },
       ],
@@ -180,6 +183,7 @@ describe("shared core", () => {
         kind: "task",
         title: "Created from action",
         createdAt: "2026-04-09T10:00:00.000Z",
+        priority: "normal",
         workflowState: "open",
       },
     });
@@ -192,6 +196,7 @@ describe("shared core", () => {
           kind: "task",
           title: "Created from action",
           createdAt: "2026-04-09T10:00:00.000Z",
+          priority: "normal",
           workflowState: "open",
         },
       ],
@@ -226,6 +231,7 @@ describe("shared core", () => {
         kind: "task",
         title: "After edit",
         createdAt: "2026-04-09T10:00:00.000Z",
+        priority: "normal",
         workflowState: "open",
       },
     });
@@ -235,6 +241,7 @@ describe("shared core", () => {
       kind: "task",
       title: "After edit",
       createdAt: "2026-04-09T10:00:00.000Z",
+      priority: "normal",
       workflowState: "open",
     });
 
@@ -264,6 +271,7 @@ describe("shared core", () => {
         kind: "task",
         title: "Workflow task",
         createdAt: "2026-04-09T10:00:00.000Z",
+        priority: "normal",
         workflowState: "active",
       },
     });
@@ -277,6 +285,7 @@ describe("shared core", () => {
         kind: "task",
         title: "Workflow task",
         createdAt: "2026-04-09T10:00:00.000Z",
+        priority: "normal",
         workflowState: "open",
       },
     });

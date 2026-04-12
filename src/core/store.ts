@@ -66,6 +66,12 @@ const registry = createActionRegistry([
     },
   },
   {
+    id: "items.priority.toggle",
+    run(input, services) {
+      return services.items.togglePriority(input);
+    },
+  },
+  {
     id: "sync.state",
     run(_input, services) {
       return services.sync.state();

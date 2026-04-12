@@ -72,3 +72,9 @@ export function markerForItem(input: {
 
   return markerVocabulary["task.empty"];
 }
+
+export function priorityMarker(input: {
+  readonly priority?: "normal" | "high";
+}): string {
+  return input.priority === "high" ? "*" : " ";
+}

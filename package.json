@@ -1,15 +1,20 @@
 {
-  "name": "y-felin",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Local-first terminal application backed by RDF and Solid Pods.",
+  "name": "@michalporeba/y-felin",
+  "version": "0.1.1",
+  "description": "A TUI bullet-journal / personal task manager keeping the data local with an option of syncing it to SOLID Pods.",
   "type": "module",
+  "license": "MIT",
   "engines": {
     "node": ">=24"
   },
   "bin": {
-    "fln": "./dist/cli.js"
+    "fln": "./dist/src/fln.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",

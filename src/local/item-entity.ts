@@ -30,7 +30,7 @@ const vocabulary = defineVocabulary({
     NormalPriority: "https://michalporeba.com/ns/lifegraph#NormalPriority",
   },
   uri({ entityName, id }) {
-    return `https://melin.app/id/${entityName}/${id}`;
+    return `https://y-felin.app/id/${entityName}/${id}`;
   },
 });
 

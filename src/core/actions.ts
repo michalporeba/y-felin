@@ -20,7 +20,7 @@ export type ActionMap = {
   "app.describe": {
     input: { surface: "cli" | "tui" };
     output: {
-      name: "melin";
+      name: "y-felin";
       version: string;
       surface: "cli" | "tui";
       message: string;

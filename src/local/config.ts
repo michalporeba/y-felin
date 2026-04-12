@@ -13,7 +13,7 @@ export type LocalStorageConfig = {
   readonly sqliteFilePath: string;
 };
 
-const DEFAULT_SQLITE_FILE_NAME = "melin.sqlite";
+const DEFAULT_SQLITE_FILE_NAME = "y-felin.sqlite";
 
 export function resolveLocalStorageConfig(
   input: LocalStorageConfigInput = {},
@@ -23,8 +23,8 @@ export function resolveLocalStorageConfig(
     input.xdgDataHome ?? process.env["XDG_DATA_HOME"] ?? undefined;
   const homeDir = input.homeDir ?? process.env["HOME"] ?? os.homedir();
   const defaultDataDir = xdgDataHome
-    ? path.join(xdgDataHome, "melin")
-    : path.join(homeDir, ".local", "share", "melin");
+    ? path.join(xdgDataHome, "y-felin")
+    : path.join(homeDir, ".local", "share", "y-felin");
   const dataDir = input.dataDir ?? defaultDataDir;
 
   return {

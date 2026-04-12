@@ -84,15 +84,13 @@ describe("shared core", () => {
   it("dispatches shared actions without any UI adapter", async () => {
     const store = createAppStore(createAppServices());
 
-    await expect(
-      store.dispatch("app.describe", { surface: "cli" }),
-    ).resolves.toEqual({
+    await expect(store.dispatch("app.describe", { surface: "cli" })).resolves.toEqual({
       ok: true,
       value: {
-        name: "melin",
+        name: "y-felin",
         version: "0.0.0",
         surface: "cli",
-        message: "Melin CLI placeholder",
+        message: "y-felin CLI placeholder",
       },
     });
 
@@ -116,7 +114,7 @@ describe("shared core", () => {
   });
 
   it("lists items through shared selectors in chronological order", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-test-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-test-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -160,7 +158,7 @@ describe("shared core", () => {
   });
 
   it("creates items through the shared action model", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-create-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-create-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -206,7 +204,7 @@ describe("shared core", () => {
   });
 
   it("updates items through the shared action model", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-update-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-update-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -249,7 +247,7 @@ describe("shared core", () => {
   });
 
   it("moves task workflow state through the shared action model", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-workflow-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-workflow-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -294,7 +292,7 @@ describe("shared core", () => {
   });
 
   it("rejects empty item titles through the shared result shape", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-empty-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-empty-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -315,7 +313,7 @@ describe("shared core", () => {
   });
 
   it("rejects updates for unknown items", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-missing-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-missing-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -350,7 +348,7 @@ describe("shared core", () => {
   });
 
   it("exposes local-only sync state through the shared action model", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-core-sync-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-sync-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });

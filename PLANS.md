@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This file breaks Melin into small implementation slices that can be developed,
+This file breaks y-felin into small implementation slices that can be developed,
 tested, and reviewed independently. `ADR.md` records architecture decisions;
 this file is the sequential roadmap.
 
 ## Current decisions and instructions
 
-- Build Melin in TypeScript.
+- Build y-felin in TypeScript.
 - Use Ink for the primary TUI.
 - Keep the TUI full-screen and resize-aware.
 - Keep all user actions scriptable through a CLI as well as the TUI.
@@ -33,7 +33,7 @@ this file is the sequential roadmap.
 - Avoid speculative ontology work.
 - Defer Pod attachment UX until local workflows are solid.
 - If a missing capability clearly belongs in `lofipod`, note it and move that
-  work there rather than reimplementing it in Melin.
+  work there rather than reimplementing it in y-felin.
 
 ## Sequential steps
 
@@ -84,7 +84,7 @@ this file is the sequential roadmap.
 
 - Goal: prove the verb-first command model early.
 - Scope:
-  - commands such as `melin show inbox`, `melin create item`, `melin list items`
+  - commands such as `fln show inbox`, `fln create item`, `fln list items`
   - human-readable output
   - optional `--json` output
   - stable exit-code behavior
@@ -110,7 +110,7 @@ this file is the sequential roadmap.
 
 ### Step 6: Local persistence with lofipod
 
-- Goal: connect Melin to `lofipod/node` with SQLite.
+- Goal: connect y-felin to `lofipod/node` with SQLite.
 - Scope:
   - engine creation
   - first entity mapping using current ontology

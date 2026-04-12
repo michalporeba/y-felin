@@ -1,7 +1,7 @@
 export {
   createLocalEngine,
   createAndSaveDefaultItem,
-  type MelinLocalEngine,
+  type YFelinLocalEngine,
 } from "./engine.js";
 export {
   resolveLocalStorageConfig,

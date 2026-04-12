@@ -72,7 +72,7 @@ mlg:coordinationState
 mlg:WorkflowStates
   a skos:ConceptScheme ;
   skos:prefLabel "Workflow states"@en ;
-  skos:definition "Primary progression states for work tracked in Melin and related applications."@en .
+  skos:definition "Primary progression states for work tracked in y-felin and related applications."@en .
 
 mlg:PriorityLevels
   a skos:ConceptScheme ;

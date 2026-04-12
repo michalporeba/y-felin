@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe("CLI sync seam", () => {
   it("shows local-only sync state", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-cli-sync-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-cli-sync-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });
@@ -40,7 +40,7 @@ describe("CLI sync seam", () => {
   });
 
   it("creates notes through the CLI", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-cli-note-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-cli-note-"));
     tempRoots.push(root);
 
     const localEngine = createLocalEngine({ dataDir: root });

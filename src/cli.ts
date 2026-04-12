@@ -29,17 +29,17 @@ export async function runCli(
 
   try {
     if (argv.includes("--help") || argv.includes("-h")) {
-      io.log("melin");
+      io.log("fln");
       io.log("");
       io.log("Current commands:");
-      io.log("  melin");
-      io.log("  melin --help");
-      io.log("  melin tui");
-      io.log("  melin list items");
-      io.log("  melin create task <title>");
-      io.log("  melin create note <title>");
-      io.log("  melin update item <id> <title>");
-      io.log("  melin show sync");
+      io.log("  fln");
+      io.log("  fln --help");
+      io.log("  fln tui");
+      io.log("  fln list items");
+      io.log("  fln create task <title>");
+      io.log("  fln create note <title>");
+      io.log("  fln update item <id> <title>");
+      io.log("  fln show sync");
 
       return 0;
     }
@@ -112,7 +112,7 @@ export async function runCli(
       return 0;
     }
 
-    io.log("Melin CLI placeholder");
+    io.log("y-felin CLI placeholder");
     return 0;
   } finally {
     if (ownsServices) {

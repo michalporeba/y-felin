@@ -1,5 +1,5 @@
 {
-  "name": "melin",
+  "name": "y-felin",
   "version": "0.0.0",
   "private": true,
   "description": "Local-first terminal application backed by RDF and Solid Pods.",
@@ -8,7 +8,7 @@
     "node": ">=24"
   },
   "bin": {
-    "melin": "./dist/cli.js"
+    "fln": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

@@ -24,26 +24,26 @@ describe("resolveLocalStorageConfig", () => {
         homeDir: "/tmp/home",
       }),
     ).toEqual({
-      dataDir: "/tmp/xdg-data/melin",
-      sqliteFilePath: "/tmp/xdg-data/melin/melin.sqlite",
+      dataDir: "/tmp/xdg-data/y-felin",
+      sqliteFilePath: "/tmp/xdg-data/y-felin/y-felin.sqlite",
     });
   });
 
-  it("falls back to ~/.local/share/melin", () => {
+  it("falls back to ~/.local/share/y-felin", () => {
     expect(
       resolveLocalStorageConfig({
         homeDir: "/tmp/home",
       }),
     ).toEqual({
-      dataDir: "/tmp/home/.local/share/melin",
-      sqliteFilePath: "/tmp/home/.local/share/melin/melin.sqlite",
+      dataDir: "/tmp/home/.local/share/y-felin",
+      sqliteFilePath: "/tmp/home/.local/share/y-felin/y-felin.sqlite",
     });
   });
 });
 
 describe("local lofipod persistence", () => {
   it("creates, lists, and reloads items from SQLite storage", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-local-test-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-local-test-"));
     tempRoots.push(root);
 
     const first = createLocalEngine({

@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import {
   createLocalEngine,
   type LocalStorageConfigInput,
-  type MelinLocalEngine,
+  type YFelinLocalEngine,
 } from "../local/index.js";
 import { getPerspective, listPerspectives } from "./perspectives.js";
 import {
@@ -49,7 +49,7 @@ export type AppServices = {
 
 export type AppServicesInput = {
   readonly localStorage?: LocalStorageConfigInput;
-  readonly localEngine?: MelinLocalEngine;
+  readonly localEngine?: YFelinLocalEngine;
   readonly idGenerator?: () => string;
   readonly now?: () => string;
 };
@@ -59,7 +59,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
   const idGenerator = input.idGenerator ?? (() => crypto.randomUUID());
   const now = input.now ?? (() => new Date().toISOString());
 
-  const requireLocalEngine = (): MelinLocalEngine => {
+  const requireLocalEngine = (): YFelinLocalEngine => {
     if (!localEngine) {
       localEngine = createLocalEngine(input.localStorage);
     }

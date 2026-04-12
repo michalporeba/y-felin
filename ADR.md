@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted as the current architecture and constraints record for Melin.
+Accepted as the current architecture and constraints record for y-felin.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ this file records the architectural direction those steps should follow.
 
 ### Product shape
 
-- Melin is a local-first personal information tool for technical users.
+- y-felin is a local-first personal information tool for technical users.
 - The primary interface is a terminal user interface.
 - The TUI should feel keyboard-first and friendly to users who are comfortable
   with neovim-like workflows.
@@ -34,8 +34,8 @@ this file records the architectural direction those steps should follow.
 
 - Every user action exposed in the TUI should also be available through the
   command line.
-- The CLI should use a verb-first command grammar such as `melin create item`
-  and `melin show inbox`.
+- The CLI should use a verb-first command grammar such as `fln create item`
+  and `fln show inbox`.
 - TUI keybindings and CLI commands should dispatch the same application
   actions rather than maintain separate business logic.
 
@@ -55,7 +55,7 @@ this file records the architectural direction those steps should follow.
   modal edit state.
 - Quick capture should happen inline within the inbox perspective.
 - Editing should be item-scoped and in place.
-- Melin should not model the main list as a text buffer edited like a file.
+- y-felin should not model the main list as a text buffer edited like a file.
 
 ### Data and storage
 
@@ -68,7 +68,7 @@ this file records the architectural direction those steps should follow.
 
 ### Ontology
 
-- Melin should use and expand `ontology.ttl`.
+- y-felin should use and expand `ontology.ttl`.
 - Ontology changes should be incremental and driven by concrete user flows.
 - The ontology is currently local to the project but may later be published
   separately.
@@ -87,7 +87,7 @@ this file records the architectural direction those steps should follow.
     `reviewState`
   - the workflow marker lane renders `workflowState`
   - the coordination marker lane renders `coordinationState`
-- Default Melin symbols may be recorded in the ontology as annotations for
+- Default y-felin symbols may be recorded in the ontology as annotations for
   concepts or classes, but applications remain free to choose different glyphs.
 
 ### Configuration
@@ -110,7 +110,7 @@ this file records the architectural direction those steps should follow.
   full product in one pass.
 - Rich query semantics, additional perspectives, sidecars, Pod login flows,
   and broader item types remain out of scope until later steps require them.
-- If Melin needs lower-level local-first or sync capabilities that clearly
+- If y-felin needs lower-level local-first or sync capabilities that clearly
   belong in `lofipod`, that work should be considered for the library rather
   than duplicated here.
 

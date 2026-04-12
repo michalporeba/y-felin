@@ -1,6 +1,6 @@
-# Melin Glossary
+# y-felin Glossary
 
-This file captures the working language for discussing Melin's application design, user interface, and user experience.
+This file captures the working language for discussing y-felin's application design, user interface, and user experience.
 
 The purpose is precision: each term should mean one thing, so we can talk about behavior, layout, and interaction without overloading words like "view".
 
@@ -24,7 +24,7 @@ Examples include a single pane, a main pane with a sidecar, a horizontal split, 
 
 A bounded region of the screen with a specific structural role in the current layout.
 
-In Melin this is likely to include:
+In y-felin this is likely to include:
 
 - main pane
 - sidecar pane
@@ -43,7 +43,7 @@ A pane is the slot; a panel is what fills it.
 
 The persistent framing UI around the working area.
 
-In Melin this includes the top bar, bottom bar, separators, titles, status indicators, and key hints.
+In y-felin this includes the top bar, bottom bar, separators, titles, status indicators, and key hints.
 
 ### Screen
 
@@ -167,7 +167,7 @@ This is an important explicit design concern for a terminal application.
 
 The visual marker lane used for triage emphasis before the main entry symbol.
 
-In Melin this lane may reflect `priority` or `reviewState`, even though those are separate semantic dimensions in the ontology.
+In y-felin this lane may reflect `priority` or `reviewState`, even though those are separate semantic dimensions in the ontology.
 
 ### Workflow Marker
 
@@ -181,7 +181,7 @@ The visual marker lane used for coordination-related states.
 
 Examples include delegation markers.
 
-## Recommended Melin-Specific Definitions
+## Recommended y-felin-Specific Definitions
 
 These are the preferred meanings to use in project discussions.
 
@@ -233,10 +233,10 @@ The term is overloaded by:
 - user-visible screen
 - filtered lens on data
 
-For Melin, `panel` and `screen` are safer than `view`.
+For y-felin, `panel` and `screen` are safer than `view`.
 
 ## Example Usage
 
-This is a precise way to describe Melin:
+This is a precise way to describe y-felin:
 
 Inside the `inbox` perspective, use a single-pane layout by default. The main pane contains the inbox list panel. In capture mode, the same panel shows an inline editor. The chrome should remain minimal.

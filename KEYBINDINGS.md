@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the current action vocabulary, default keybindings, and reserved key space for Melin.
+This document defines the current action vocabulary, default keybindings, and reserved key space for y-felin.
 
 It is a planning and coordination document. The goal is to keep:
 

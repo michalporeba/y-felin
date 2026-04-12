@@ -225,7 +225,7 @@ describe("TuiShell", () => {
   });
 
   it("renders persisted inbox items and supports keyboard navigation", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-test-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-test-"));
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -274,7 +274,7 @@ describe("TuiShell", () => {
   });
 
   it("supports inline capture submit and immediate list refresh", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-capture-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-capture-"));
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({
       localEngine,
@@ -326,7 +326,7 @@ describe("TuiShell", () => {
   });
 
   it("shows the inline create row at the bottom of the inbox", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-create-bottom-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-create-bottom-"));
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -367,7 +367,7 @@ describe("TuiShell", () => {
   });
 
   it("supports inline capture cancel", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-cancel-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-cancel-"));
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const app = render(
@@ -399,7 +399,7 @@ describe("TuiShell", () => {
   });
 
   it("creates notes with the n shortcut", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-note-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-note-"));
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({
       localEngine,
@@ -445,7 +445,7 @@ describe("TuiShell", () => {
   });
 
   it("supports item-scoped edit and preserves focus", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-edit-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-edit-"));
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -508,7 +508,7 @@ describe("TuiShell", () => {
   });
 
   it("advances and rewinds task workflow with l and h", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-workflow-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-workflow-"));
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -551,7 +551,7 @@ describe("TuiShell", () => {
   });
 
   it("toggles task priority with p", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-priority-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-priority-"));
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -590,7 +590,7 @@ describe("TuiShell", () => {
   });
 
   it("renders help and actions from a custom keymap configuration", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-keymap-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-keymap-"));
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const customKeymap: KeymapConfig = {
@@ -649,7 +649,7 @@ describe("TuiShell", () => {
   });
 
   it("shows global help using the active bindings when a perspective overrides a global key", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "melin-tui-help-override-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-help-override-"));
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const customKeymap: KeymapConfig = {

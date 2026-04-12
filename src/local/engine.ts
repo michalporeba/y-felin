@@ -9,7 +9,7 @@ import {
 import type { ItemKind, ItemSummary, WorkflowState } from "../core/index.js";
 import type { SyncState } from "../core/sync.js";
 
-export type MelinLocalEngine = {
+export type YFelinLocalEngine = {
   readonly engine: Engine;
   readonly storage: LocalStorageConfig;
   readonly saveItem: (item: ItemSummary) => Promise<ItemSummary>;
@@ -21,7 +21,7 @@ export type MelinLocalEngine = {
 
 export function createLocalEngine(
   input: LocalStorageConfigInput = {},
-): MelinLocalEngine {
+): YFelinLocalEngine {
   const storage = resolveLocalStorageConfig(input);
   const engine = createEngine({
     entities: [ItemEntity],
@@ -52,7 +52,7 @@ export function createLocalEngine(
 }
 
 export function createAndSaveDefaultItem(
-  engine: MelinLocalEngine,
+  engine: YFelinLocalEngine,
   input: {
     readonly id: string;
     readonly kind?: ItemKind;

@@ -1,4 +1,4 @@
-# Melin
+# y-felin
 SOLID Pod based personal task management.
 
 ## The Idea

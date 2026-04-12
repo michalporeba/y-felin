@@ -298,3 +298,28 @@ That means this document should remain aligned with:
 - the action inventory in code
 - the default keymap in [src/tui/keymap.ts](/media/michal/data/code/melin/src/tui/keymap.ts)
 - the active help rendering in [src/tui/shell.tsx](/media/michal/data/code/melin/src/tui/shell.tsx)
+
+Some of the actions will need multi stroke bindings. 
+
+i - stands for insert and it will be followed by a type of a journal entry type especially if the type has no direct binding. 
+
+i g - is insert global, when in a project, person or other focused perspective normal `i` inserts an entry in that context, `i g` starts an insert in the global inbox, so `i g n` creates a note in the global inbox
+
+q - stands for question, mark for clarification(to toggle a questionmark for a question, or to create a question item by pressing `i q`. 
+
+Q - is to quit. 
+
+u - is for undo. 
+
+x - is for delete
+
+m - is for morph. `m t` is to morph an entry into a task, `m e` morphs to an event. 
+
+g - is for 'go to', for switching perspectives. `g i` go to inbox
+
+c - is for coordination. `c w` is 'waiting', `c b` is blocked, `c c` is cleared coordination status. 
+
+o - is to open details
+e - is to edit inline
+
+t - is to tag. 

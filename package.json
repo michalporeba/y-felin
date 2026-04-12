@@ -19,7 +19,7 @@
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "cli": "node --import tsx src/cli.ts",
-    "tui": "node --import tsx src/tui.tsx",
+    "tui": "node --import tsx src/tui.tsx --data-dir=./data",
     "test": "vitest run"
   },
   "dependencies": {

@@ -4,13 +4,13 @@ import { createAppServices } from "./core/index.js";
 import { TuiShell } from "./tui/shell.js";
 
 type ParsedTuiArgs = {
-  readonly dataDir: string;
+  readonly dataDir?: string;
 };
 
 export function parseTuiArgs(argv: string[]): ParsedTuiArgs {
   const dataDirFlag = argv.find((arg) => arg === "--data-dir" || arg.startsWith("--data-dir="));
   if (!dataDirFlag) {
-    return { dataDir: "./data" };
+    return {};
   }
 
   if (dataDirFlag.startsWith("--data-dir=")) {
@@ -31,11 +31,8 @@ export function parseTuiArgs(argv: string[]): ParsedTuiArgs {
   return { dataDir };
 }
 
-export function TuiApp({ dataDir = "./data" }: { readonly dataDir?: string } = {}) {
-  const services = createAppServices({
-    localStorage: { dataDir },
-  });
-  return <TuiShell services={services} />;
+export function TuiApp({ dataDir }: { readonly dataDir?: string } = {}) {
+  return <TuiShell dataDir={dataDir} />;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

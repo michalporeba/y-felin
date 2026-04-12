@@ -106,14 +106,23 @@ describe("resolveShellLayout", () => {
 });
 
 describe("TuiShell", () => {
-  it("defaults the TUI data directory to ./data", () => {
-    expect(parseTuiArgs([])).toEqual({ dataDir: "./data" });
+  it("leaves the TUI data directory unset by default", () => {
+    expect(parseTuiArgs([])).toEqual({});
   });
 
   it("accepts an explicit TUI data directory", () => {
     expect(parseTuiArgs(["--data-dir", "/tmp/custom"])).toEqual({
       dataDir: "/tmp/custom",
     });
+  });
+
+  it("accepts a shell data directory override", () => {
+    const app = render(
+      <TuiShell dataDir="/tmp/custom" dimensions={{ columns: 100, rows: 30 }} />,
+    );
+
+    expect(app.lastFrame()).toContain("Loading inbox...");
+    app.unmount();
   });
 
   it("renders the shell with both bars visible", () => {

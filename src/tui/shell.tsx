@@ -39,6 +39,7 @@ export type TuiShellProps = {
   readonly showTopBar?: boolean;
   readonly showBottomBar?: boolean;
   readonly initialPerspectiveId?: string;
+  readonly dataDir?: string;
   readonly services?: AppServices;
   readonly store?: AppStore;
   readonly dimensions?: {
@@ -62,12 +63,17 @@ export function TuiShell({
   showTopBar = true,
   showBottomBar = true,
   initialPerspectiveId = "inbox",
+  dataDir,
   services,
   store,
   dimensions,
   keymapConfig = defaultKeymapConfig,
 }: TuiShellProps) {
-  const [ownedServices] = useState(() => services ?? createAppServices());
+  const [ownedServices] = useState(() =>
+    services ?? createAppServices({
+      localStorage: dataDir ? { dataDir } : undefined,
+    }),
+  );
   const [appStore] = useState(() => store ?? createAppStore(ownedServices));
   const { exit } = useApp();
   const windowSize = useWindowSize();

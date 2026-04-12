@@ -25,7 +25,7 @@ describe("resolveLocalStorageConfig", () => {
       }),
     ).toEqual({
       dataDir: "/tmp/xdg-data/y-felin",
-      sqliteFilePath: "/tmp/xdg-data/y-felin/y-felin.sqlite",
+      sqliteFilePath: "/tmp/xdg-data/y-felin/default.sqlite",
     });
   });
 
@@ -36,7 +36,7 @@ describe("resolveLocalStorageConfig", () => {
       }),
     ).toEqual({
       dataDir: "/tmp/home/.local/share/y-felin",
-      sqliteFilePath: "/tmp/home/.local/share/y-felin/y-felin.sqlite",
+      sqliteFilePath: "/tmp/home/.local/share/y-felin/default.sqlite",
     });
   });
 });

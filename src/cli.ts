@@ -19,16 +19,21 @@ export async function runCli(
     readonly io?: CliIo;
   } = {},
 ): Promise<number> {
-  const services = options.services ?? createAppServices();
-  const store = createAppStore(services);
   const io = options.io ?? {
     log: (message: string) => console.log(message),
     error: (message: string) => console.error(message),
   };
+  const parsed = parseCliArgs(argv);
+  const services =
+    options.services ??
+    createAppServices({
+      localStorage: parsed.dataDir ? { dataDir: parsed.dataDir } : undefined,
+    });
+  const store = createAppStore(services);
   const ownsServices = !options.services;
 
   try {
-    if (argv.includes("--help") || argv.includes("-h")) {
+    if (parsed.argv.includes("--help") || parsed.argv.includes("-h")) {
       io.log("fln");
       io.log("");
       io.log("Current commands:");
@@ -44,12 +49,12 @@ export async function runCli(
       return 0;
     }
 
-    if (argv[0] === "tui") {
+    if (parsed.argv[0] === "tui") {
       io.log("Run `npm run tui` to start the Ink shell.");
       return 0;
     }
 
-    if (argv[0] === "list" && argv[1] === "items") {
+    if (parsed.argv[0] === "list" && parsed.argv[1] === "items") {
       const result = await store.dispatch("items.list", undefined);
       if (!result.ok) {
         io.error(result.error.message);
@@ -69,11 +74,11 @@ export async function runCli(
     }
 
     if (
-      argv[0] === "create" &&
-      (argv[1] === "task" || argv[1] === "note")
+      parsed.argv[0] === "create" &&
+      (parsed.argv[1] === "task" || parsed.argv[1] === "note")
     ) {
-      const title = argv.slice(2).join(" ").trim();
-      const kind = argv[1];
+      const title = parsed.argv.slice(2).join(" ").trim();
+      const kind = parsed.argv[1];
       const result = await store.dispatch("items.create", { kind, title });
       if (!result.ok) {
         io.error(result.error.message);
@@ -86,9 +91,9 @@ export async function runCli(
       return 0;
     }
 
-    if (argv[0] === "update" && argv[1] === "item") {
-      const id = argv[2]?.trim() ?? "";
-      const title = argv.slice(3).join(" ").trim();
+    if (parsed.argv[0] === "update" && parsed.argv[1] === "item") {
+      const id = parsed.argv[2]?.trim() ?? "";
+      const title = parsed.argv.slice(3).join(" ").trim();
       const result = await store.dispatch("items.update", { id, title });
       if (!result.ok) {
         io.error(result.error.message);
@@ -101,7 +106,7 @@ export async function runCli(
       return 0;
     }
 
-    if (argv[0] === "show" && argv[1] === "sync") {
+    if (parsed.argv[0] === "show" && parsed.argv[1] === "sync") {
       const result = await store.dispatch("sync.state", undefined);
       if (!result.ok) {
         io.error(result.error.message);
@@ -119,6 +124,42 @@ export async function runCli(
       await services.dispose();
     }
   }
+}
+
+type ParsedCliArgs = {
+  readonly argv: string[];
+  readonly dataDir?: string;
+};
+
+function parseCliArgs(argv: string[]): ParsedCliArgs {
+  const parsedArgv: string[] = [];
+  let dataDir: string | undefined;
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === "--data-dir" || arg.startsWith("--data-dir=")) {
+      if (arg.startsWith("--data-dir=")) {
+        dataDir = arg.slice("--data-dir=".length);
+        continue;
+      }
+
+      const next = argv[index + 1];
+      if (!next || next.startsWith("-")) {
+        throw new Error("Missing value for --data-dir.");
+      }
+
+      dataDir = next;
+      index += 1;
+      continue;
+    }
+
+    parsedArgv.push(arg);
+  }
+
+  return {
+    argv: parsedArgv,
+    dataDir,
+  };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

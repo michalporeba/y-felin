@@ -14,6 +14,27 @@ afterEach(() => {
 });
 
 describe("CLI sync seam", () => {
+  it("uses the requested data directory", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-cli-data-dir-"));
+    tempRoots.push(root);
+
+    const logs: string[] = [];
+    const errors: string[] = [];
+
+    await expect(
+      runCli(["--data-dir", root, "create", "note", "CLI note"], {
+        io: {
+          log: (message) => logs.push(message),
+          error: (message) => errors.push(message),
+        },
+      }),
+    ).resolves.toBe(0);
+
+    expect(errors).toEqual([]);
+    expect(logs[0]).toContain("Created");
+    expect(fs.existsSync(path.join(root, "default.sqlite"))).toBe(true);
+  });
+
   it("shows local-only sync state", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-cli-sync-"));
     tempRoots.push(root);

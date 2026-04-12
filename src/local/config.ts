@@ -13,7 +13,7 @@ export type LocalStorageConfig = {
   readonly sqliteFilePath: string;
 };
 
-const DEFAULT_SQLITE_FILE_NAME = "y-felin.sqlite";
+const DEFAULT_SQLITE_FILE_NAME = "default.sqlite";
 
 export function resolveLocalStorageConfig(
   input: LocalStorageConfigInput = {},

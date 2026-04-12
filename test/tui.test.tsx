@@ -18,6 +18,7 @@ import {
   createAppServices,
   createLocalEngine,
 } from "../src/index.js";
+import { parseTuiArgs } from "../src/tui.tsx";
 
 function expectFrameToContainAll(frame: string, anchors: string[]) {
   for (const anchor of anchors) {
@@ -105,6 +106,16 @@ describe("resolveShellLayout", () => {
 });
 
 describe("TuiShell", () => {
+  it("defaults the TUI data directory to ./data", () => {
+    expect(parseTuiArgs([])).toEqual({ dataDir: "./data" });
+  });
+
+  it("accepts an explicit TUI data directory", () => {
+    expect(parseTuiArgs(["--data-dir", "/tmp/custom"])).toEqual({
+      dataDir: "/tmp/custom",
+    });
+  });
+
   it("renders the shell with both bars visible", () => {
     const app = render(<TuiShell dimensions={{ columns: 100, rows: 30 }} />);
 

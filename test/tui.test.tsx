@@ -329,7 +329,7 @@ describe("TuiShell", () => {
     ]);
     expect(app.lastFrame()).toContain(">  □  New item");
 
-    await expect(localEngine.listItems()).resolves.toEqual([
+    await expect(localEngine.listTasks()).resolves.toEqual([
       {
         id: "item-captured",
         kind: "task",
@@ -411,7 +411,8 @@ describe("TuiShell", () => {
       "Editor: idle",
       `Press ${bindingFor("entry.create.task")} for a task or ${bindingFor("entry.create.note")} for a note.`,
     ]);
-    await expect(localEngine.listItems()).resolves.toEqual([]);
+    await expect(localEngine.listTasks()).resolves.toEqual([]);
+    await expect(localEngine.listNotes()).resolves.toEqual([]);
 
     app.unmount();
     await services.dispose();
@@ -450,13 +451,12 @@ describe("TuiShell", () => {
     ]);
     expect(app.lastFrame()).toContain(">  -  Remember this");
 
-    await expect(localEngine.getItem("item-note")).resolves.toEqual({
+    await expect(localEngine.getNote("item-note")).resolves.toEqual({
       id: "item-note",
       kind: "note",
       title: "Remember this",
       createdAt: "2026-04-09T13:00:00.000Z",
       priority: "normal",
-      workflowState: undefined,
     });
 
     app.unmount();
@@ -513,7 +513,7 @@ describe("TuiShell", () => {
     ]);
     expect(app.lastFrame()).toContain(">  □  Renamed");
 
-    await expect(localEngine.getItem("item-1")).resolves.toEqual({
+    await expect(localEngine.getTask("item-1")).resolves.toEqual({
       id: "item-1",
       kind: "task",
       title: "Renamed",
@@ -556,7 +556,7 @@ describe("TuiShell", () => {
     await wait(20);
     expect(app.lastFrame()).toContain(">  ◩  Flow");
 
-    await expect(localEngine.getItem("item-1")).resolves.toEqual({
+    await expect(localEngine.getTask("item-1")).resolves.toEqual({
       id: "item-1",
       kind: "task",
       title: "Flow",
@@ -595,7 +595,7 @@ describe("TuiShell", () => {
     await wait(20);
     expect(app.lastFrame()).toContain(">  □  Priority");
 
-    await expect(localEngine.getItem("item-1")).resolves.toEqual({
+    await expect(localEngine.getTask("item-1")).resolves.toEqual({
       id: "item-1",
       kind: "task",
       title: "Priority",

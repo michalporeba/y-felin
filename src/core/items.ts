@@ -1,19 +1,28 @@
-export type ItemKind = "task" | "note";
 export type WorkflowState = "open" | "active" | "done";
 export type PriorityLevel = "normal" | "high";
 
-export type ItemSummary = {
+export type Task = {
   readonly id: string;
-  readonly kind: ItemKind;
+  readonly kind: "task";
   readonly title: string;
   readonly createdAt: string;
-  readonly priority?: PriorityLevel;
-  readonly workflowState?: WorkflowState;
+  readonly priority: PriorityLevel;
+  readonly workflowState: WorkflowState;
 };
 
+export type Note = {
+  readonly id: string;
+  readonly kind: "note";
+  readonly title: string;
+  readonly createdAt: string;
+  readonly priority: PriorityLevel;
+};
+
+export type AnyItem = Task | Note;
+
 export function compareItemsOldestFirst(
-  left: ItemSummary,
-  right: ItemSummary,
+  left: AnyItem,
+  right: AnyItem,
 ): number {
   const byCreatedAt = left.createdAt.localeCompare(right.createdAt);
   if (byCreatedAt !== 0) {

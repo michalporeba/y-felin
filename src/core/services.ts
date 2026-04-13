@@ -8,11 +8,11 @@ import { getPerspective, listPerspectives } from "./perspectives.js";
 import {
   advanceWorkflowState,
   compareItemsOldestFirst,
-  type ItemKind,
-  type ItemSummary,
+  type AnyItem,
+  type Note,
   type PriorityLevel,
+  type Task,
   rewindWorkflowState,
-  type WorkflowState,
 } from "./items.js";
 import type { SyncState } from "./sync.js";
 
@@ -22,24 +22,24 @@ export type AppServices = {
     readonly list: typeof listPerspectives;
   };
   readonly items: {
-    readonly list: (options?: { readonly limit?: number }) => Promise<ItemSummary[]>;
+    readonly list: (options?: { readonly limit?: number }) => Promise<AnyItem[]>;
     readonly create: (input: {
-      readonly kind: ItemKind;
+      readonly kind: AnyItem["kind"];
       readonly title: string;
-    }) => Promise<ItemSummary>;
+    }) => Promise<AnyItem>;
     readonly update: (input: {
       readonly id: string;
       readonly title: string;
-    }) => Promise<ItemSummary>;
+    }) => Promise<AnyItem>;
     readonly advanceWorkflow: (input: {
       readonly id: string;
-    }) => Promise<ItemSummary>;
+    }) => Promise<AnyItem>;
     readonly rewindWorkflow: (input: {
       readonly id: string;
-    }) => Promise<ItemSummary>;
+    }) => Promise<AnyItem>;
     readonly togglePriority: (input: {
       readonly id: string;
-    }) => Promise<ItemSummary>;
+    }) => Promise<AnyItem>;
   };
   readonly sync: {
     readonly state: () => Promise<SyncState>;
@@ -74,8 +74,12 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
     },
     items: {
       async list(options) {
-        const items = await requireLocalEngine().listItems(options);
-        return [...items].sort(compareItemsOldestFirst);
+        const [tasks, notes] = await Promise.all([
+          requireLocalEngine().listTasks(),
+          requireLocalEngine().listNotes(),
+        ]);
+        const items = [...tasks, ...notes].sort(compareItemsOldestFirst);
+        return options?.limit ? items.slice(0, options.limit) : items;
       },
       async create({ kind, title }) {
         const trimmedTitle = title.trim();
@@ -83,13 +87,25 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           throw new Error("Item title cannot be empty.");
         }
 
-        return requireLocalEngine().saveItem({
+        const local = requireLocalEngine();
+        const base = {
           id: idGenerator(),
-          kind,
           title: trimmedTitle,
           createdAt: now(),
-          priority: "normal",
-          workflowState: defaultWorkflowState(kind),
+          priority: "normal" as PriorityLevel,
+        };
+
+        if (kind === "note") {
+          return local.saveNote({
+            ...base,
+            kind: "note",
+          });
+        }
+
+        return local.saveTask({
+          ...base,
+          kind: "task",
+          workflowState: "open",
         });
       },
       async update({ id, title }) {
@@ -98,53 +114,53 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           throw new Error("Item title cannot be empty.");
         }
 
-        const existing = await requireLocalEngine().getItem(id);
+        const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
 
-        return requireLocalEngine().saveItem({
+        return saveAnyItem(requireLocalEngine(), {
           ...existing,
           title: trimmedTitle,
         });
       },
       async advanceWorkflow({ id }) {
-        const existing = await requireLocalEngine().getItem(id);
+        const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
 
-        if (existing.kind !== "task" || !existing.workflowState) {
+        if (existing.kind !== "task") {
           return existing;
         }
 
-        return requireLocalEngine().saveItem({
+        return requireLocalEngine().saveTask({
           ...existing,
           workflowState: advanceWorkflowState(existing.workflowState),
         });
       },
       async rewindWorkflow({ id }) {
-        const existing = await requireLocalEngine().getItem(id);
+        const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
 
-        if (existing.kind !== "task" || !existing.workflowState) {
+        if (existing.kind !== "task") {
           return existing;
         }
 
-        return requireLocalEngine().saveItem({
+        return requireLocalEngine().saveTask({
           ...existing,
           workflowState: rewindWorkflowState(existing.workflowState),
         });
       },
       async togglePriority({ id }) {
-        const existing = await requireLocalEngine().getItem(id);
+        const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
 
-        return requireLocalEngine().saveItem({
+        return saveAnyItem(requireLocalEngine(), {
           ...existing,
           priority: existing.priority === "high" ? "normal" : "high",
         });
@@ -165,6 +181,23 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
   };
 }
 
-function defaultWorkflowState(kind: ItemKind): WorkflowState | undefined {
-  return kind === "task" ? "open" : undefined;
+async function getAnyItem(
+  localEngine: YFelinLocalEngine,
+  id: string,
+): Promise<AnyItem | null> {
+  const task = await localEngine.getTask(id);
+  if (task) {
+    return task;
+  }
+
+  return localEngine.getNote(id);
+}
+
+function saveAnyItem(
+  localEngine: YFelinLocalEngine,
+  item: AnyItem,
+): Promise<AnyItem> {
+  return item.kind === "task"
+    ? localEngine.saveTask(item)
+    : localEngine.saveNote(item);
 }

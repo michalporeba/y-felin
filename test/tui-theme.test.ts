@@ -35,10 +35,45 @@ describe("fillLine", () => {
 
 describe("marker vocabulary", () => {
   it("maps live item kinds to leading markers", () => {
-    expect(markerForItem({ kind: "task", workflowState: "open" })).toBe("□");
-    expect(markerForItem({ kind: "task", workflowState: "active" })).toBe("◩");
-    expect(markerForItem({ kind: "task", workflowState: "done" })).toBe("■");
-    expect(markerForItem({ kind: "note" })).toBe("-");
+    expect(
+      markerForItem({
+        id: "task-open",
+        kind: "task",
+        title: "Task",
+        createdAt: "2026-04-09T00:00:00.000Z",
+        priority: "normal",
+        workflowState: "open",
+      }),
+    ).toBe("□");
+    expect(
+      markerForItem({
+        id: "task-active",
+        kind: "task",
+        title: "Task",
+        createdAt: "2026-04-09T00:00:00.000Z",
+        priority: "normal",
+        workflowState: "active",
+      }),
+    ).toBe("◩");
+    expect(
+      markerForItem({
+        id: "task-done",
+        kind: "task",
+        title: "Task",
+        createdAt: "2026-04-09T00:00:00.000Z",
+        priority: "normal",
+        workflowState: "done",
+      }),
+    ).toBe("■");
+    expect(
+      markerForItem({
+        id: "note-1",
+        kind: "note",
+        title: "Note",
+        createdAt: "2026-04-09T00:00:00.000Z",
+        priority: "normal",
+      }),
+    ).toBe("-");
   });
 
   it("reserves future markers for task states and entry kinds", () => {

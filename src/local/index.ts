@@ -9,8 +9,11 @@ export {
   type LocalStorageConfigInput,
 } from "./config.js";
 export {
-  ItemEntity,
-  createDefaultItem,
-  itemVocabulary,
-  rdfUri,
-} from "./item-entity.js";
+  NoteEntity,
+  createDefaultNote,
+} from "./note-entity.js";
+export {
+  TaskEntity,
+  createDefaultTask,
+} from "./task-entity.js";
+export { vocabulary, rdfUri } from "./vocabulary.js";

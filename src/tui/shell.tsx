@@ -8,8 +8,7 @@ import {
   getPerspectiveHelp,
   type AppServices,
   type AppStore,
-  type ItemKind,
-  type ItemSummary,
+  type AnyItem,
   type PerspectiveHelpDefinition,
   type PerspectiveHelpEntry,
   type PerspectiveId,
@@ -51,7 +50,7 @@ export type TuiShellProps = {
 
 type ComposerState = {
   readonly mode: "idle" | "create" | "edit";
-  readonly kind?: ItemKind;
+  readonly kind?: AnyItem["kind"];
   readonly value: string;
   readonly itemId?: string;
   readonly errorMessage?: string;
@@ -82,7 +81,7 @@ export function TuiShell({
   const perspectiveResult = getPerspective(initialPerspectiveId);
   const [itemsState, setItemsState] = useState<{
     readonly status: "loading" | "ready" | "error";
-    readonly items: ItemSummary[];
+    readonly items: AnyItem[];
     readonly errorMessage?: string;
   }>({
     status: "loading",
@@ -112,7 +111,7 @@ export function TuiShell({
     [keymapConfig, perspectiveId],
   );
 
-  const loadItems = async (): Promise<ItemSummary[] | null> => {
+  const loadItems = async (): Promise<AnyItem[] | null> => {
     const result = await appStore.dispatch("items.list", undefined);
 
     if (!result.ok) {
@@ -196,7 +195,7 @@ export function TuiShell({
         void (async () => {
           const result =
             composer.mode === "edit" && composer.itemId
-              ? await appStore.dispatch("items.update", {
+      ? await appStore.dispatch("items.update", {
                   id: composer.itemId,
                   title: composer.value,
                 })
@@ -382,7 +381,7 @@ function MainArea({
   readonly perspectiveResult: ReturnType<typeof getPerspective>;
   readonly itemsState: {
     readonly status: "loading" | "ready" | "error";
-    readonly items: ItemSummary[];
+    readonly items: AnyItem[];
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
@@ -424,7 +423,7 @@ function BottomBar({
   readonly rows: number;
   readonly itemsState: {
     readonly status: "loading" | "ready" | "error";
-    readonly items: ItemSummary[];
+    readonly items: AnyItem[];
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
@@ -518,7 +517,7 @@ function PerspectiveBody(
     readonly perspectiveResult: ReturnType<typeof getPerspective>;
     readonly itemsState: {
       readonly status: "loading" | "ready" | "error";
-      readonly items: ItemSummary[];
+      readonly items: AnyItem[];
       readonly errorMessage?: string;
     };
     readonly selectedIndex: number;
@@ -547,7 +546,7 @@ function renderPerspectiveBody(
   perspectiveResult: ReturnType<typeof getPerspective>,
   itemsState: {
     readonly status: "loading" | "ready" | "error";
-    readonly items: ItemSummary[];
+    readonly items: AnyItem[];
     readonly errorMessage?: string;
   },
   selectedIndex: number,
@@ -654,7 +653,7 @@ function renderComposerLine(composer: ComposerState): string {
 }
 
 function renderItemPrefix(
-  item: ItemSummary,
+  item: AnyItem,
   selected: boolean,
 ): string {
   const active = selected ? ">" : " ";
@@ -897,7 +896,7 @@ async function dispatchTuiAction({
   readonly helpMode: HelpMode;
   readonly itemsState: {
     readonly status: "loading" | "ready" | "error";
-    readonly items: ItemSummary[];
+    readonly items: AnyItem[];
     readonly errorMessage?: string;
   };
   readonly selectedIndex: number;
@@ -908,7 +907,7 @@ async function dispatchTuiAction({
   readonly setItemsState: React.Dispatch<
     React.SetStateAction<{
       readonly status: "loading" | "ready" | "error";
-      readonly items: ItemSummary[];
+      readonly items: AnyItem[];
       readonly errorMessage?: string;
     }>
   >;

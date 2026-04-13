@@ -1,3 +1,5 @@
+import type { AnyItem } from "../core/items.js";
+
 export type TextStyle = {
   readonly bold?: boolean;
   readonly dimColor?: boolean;
@@ -54,10 +56,7 @@ export function fillLine(text: string, columns: number): string {
   return text.padEnd(Math.max(1, columns), " ");
 }
 
-export function markerForItem(input: {
-  readonly kind: "task" | "note";
-  readonly workflowState?: "open" | "active" | "done";
-}): string {
+export function markerForItem(input: AnyItem): string {
   if (input.kind === "note") {
     return markerVocabulary.note;
   }

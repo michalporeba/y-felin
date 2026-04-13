@@ -147,6 +147,97 @@ describe("shared core", () => {
     await services.dispose();
   });
 
+  it("merges tasks and notes into a single chronological inbox list", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-mixed-"));
+    tempRoots.push(root);
+
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "note-1",
+      kind: "note",
+      title: "Earlier note",
+      createdAt: "2026-04-08T09:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "task-1",
+      title: "Later task",
+      createdAt: "2026-04-09T09:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+
+    await expect(services.items.list()).resolves.toEqual([
+      {
+        id: "note-1",
+        kind: "note",
+        title: "Earlier note",
+        createdAt: "2026-04-08T09:00:00.000Z",
+        priority: "normal",
+      },
+      {
+        id: "task-1",
+        kind: "task",
+        title: "Later task",
+        createdAt: "2026-04-09T09:00:00.000Z",
+        priority: "normal",
+        workflowState: "open",
+      },
+    ]);
+
+    await services.dispose();
+  });
+
+  it("applies inbox limits after merging tasks and notes", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-limit-"));
+    tempRoots.push(root);
+
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "task-1",
+      title: "Oldest task",
+      createdAt: "2026-04-08T08:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "note-1",
+      kind: "note",
+      title: "Second oldest note",
+      createdAt: "2026-04-08T09:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "task-2",
+      title: "Newer task",
+      createdAt: "2026-04-08T10:00:00.000Z",
+    });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "note-2",
+      kind: "note",
+      title: "Newest note",
+      createdAt: "2026-04-08T11:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+
+    await expect(services.items.list({ limit: 2 })).resolves.toEqual([
+      {
+        id: "task-1",
+        kind: "task",
+        title: "Oldest task",
+        createdAt: "2026-04-08T08:00:00.000Z",
+        priority: "normal",
+        workflowState: "open",
+      },
+      {
+        id: "note-1",
+        kind: "note",
+        title: "Second oldest note",
+        createdAt: "2026-04-08T09:00:00.000Z",
+        priority: "normal",
+      },
+    ]);
+
+    await services.dispose();
+  });
+
   it("creates items through the shared action model", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-create-"));
     tempRoots.push(root);
@@ -224,7 +315,7 @@ describe("shared core", () => {
       },
     });
 
-    await expect(localEngine.getItem("item-update")).resolves.toEqual({
+    await expect(localEngine.getTask("item-update")).resolves.toEqual({
       id: "item-update",
       kind: "task",
       title: "After edit",

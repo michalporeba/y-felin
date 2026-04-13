@@ -172,7 +172,13 @@ describe("TuiShell", () => {
   });
 
   it("opens contextual help with ?, full help with H, and closes with Esc", async () => {
-    const app = render(<TuiShell dimensions={{ columns: 90, rows: 20 }} />);
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-help-"));
+    tempRoots.push(root);
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({ localEngine });
+    const app = render(
+      <TuiShell dimensions={{ columns: 90, rows: 20 }} services={services} />,
+    );
 
     await wait(50);
     await pressAction(app, "help.context");
@@ -213,10 +219,11 @@ describe("TuiShell", () => {
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox]",
       "Editor: idle",
-      "sync local-only | pending 1",
+      "sync local-only | pending 0",
     ]);
 
     app.unmount();
+    await services.dispose();
   });
 
   it("renders persisted inbox items and supports keyboard navigation", async () => {

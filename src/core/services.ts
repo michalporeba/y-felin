@@ -92,7 +92,6 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           id: idGenerator(),
           title: trimmedTitle,
           createdAt: now(),
-          priority: "normal" as PriorityLevel,
         };
 
         if (kind === "note") {
@@ -105,6 +104,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         return local.saveTask({
           ...base,
           kind: "task",
+          priority: "normal" as PriorityLevel,
           workflowState: "open",
         });
       },
@@ -158,6 +158,10 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
+        }
+
+        if (existing.kind !== "task") {
+          return existing;
         }
 
         return saveAnyItem(requireLocalEngine(), {

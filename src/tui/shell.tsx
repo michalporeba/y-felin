@@ -6,9 +6,11 @@ import {
   describeSyncState,
   getPerspective,
   getPerspectiveHelp,
+  itemCapabilities,
   type AppServices,
   type AppStore,
   type AnyItem,
+  type ItemKind,
   type PerspectiveHelpDefinition,
   type PerspectiveHelpEntry,
   type PerspectiveId,
@@ -432,8 +434,10 @@ function BottomBar({
   readonly syncState: SyncState;
   readonly activeKeymap: CompiledKeymap;
 }) {
+  const focusedItem =
+    itemsState.status === "ready" ? itemsState.items[selectedIndex] : undefined;
   const focusLabel =
-    itemsState.status === "ready" && itemsState.items[selectedIndex]
+    focusedItem
       ? `Focus: ${selectedIndex + 1}/${itemsState.items.length}`
       : "Focus: none";
   const composerLabel =
@@ -446,9 +450,9 @@ function BottomBar({
         : `Editor: new ${composer.kind ?? "task"}`;
   const keyHints =
     helpMode === "context"
-      ? buildHintLine(activeKeymap, ["help.global"], ["Esc close"])
+      ? buildHintLine(activeKeymap, ["help.global"], undefined, ["Esc close"])
       : helpMode === "global"
-        ? buildHintLine(activeKeymap, ["help.context"], ["Esc close"])
+        ? buildHintLine(activeKeymap, ["help.context"], undefined, ["Esc close"])
       : composer.mode === "idle"
       ? buildHintLine(activeKeymap, [
           "cursor.up",
@@ -461,7 +465,7 @@ function BottomBar({
           "entry.edit",
           "help.context",
           "app.quit",
-        ])
+        ], focusedItem?.kind)
       : composer.mode === "edit"
         ? "editing"
         : `creating ${composer.kind ?? "task"}`;
@@ -658,7 +662,8 @@ function renderItemPrefix(
 ): string {
   const active = selected ? ">" : " ";
   const spacer = " ";
-  const priority = priorityMarker({ priority: item.priority });
+  const priority =
+    item.kind === "task" ? priorityMarker({ priority: item.priority }) : " ";
   const main = markerForItem(item);
   const secondary = " ";
   const trailing = " ";
@@ -784,9 +789,14 @@ function renderEmptyInboxHint(keymap: CompiledKeymap): string {
 function buildHintLine(
   keymap: CompiledKeymap,
   actionIds: readonly TuiActionId[],
+  focusedKind?: ItemKind,
   extraHints: readonly string[] = [],
 ): string {
   const hints = actionIds.flatMap((actionId) => {
+    if (!shouldShowHintForAction(actionId, focusedKind)) {
+      return [];
+    }
+
     const binding = primaryBindingForAction(keymap, actionId);
     if (!binding) {
       return [];
@@ -796,6 +806,39 @@ function buildHintLine(
   });
 
   return [...hints, ...extraHints].join(" | ");
+}
+
+function shouldShowHintForAction(
+  actionId: TuiActionId,
+  focusedKind?: ItemKind,
+): boolean {
+  if (!focusedKind) {
+    return !isItemMutatingAction(actionId);
+  }
+
+  switch (actionId) {
+    case "entry.workflow.previous":
+    case "entry.workflow.next":
+      return itemCapabilities[focusedKind].workflow;
+    case "entry.priority.toggle":
+      return itemCapabilities[focusedKind].priority;
+    default:
+      return true;
+  }
+}
+
+function isItemMutatingAction(actionId: TuiActionId): boolean {
+  switch (actionId) {
+    case "entry.workflow.previous":
+    case "entry.workflow.next":
+    case "entry.priority.toggle":
+    case "entry.create.task":
+    case "entry.create.note":
+    case "entry.edit":
+      return true;
+    default:
+      return false;
+  }
 }
 
 function shortHintForAction(actionId: TuiActionId): string {
@@ -913,6 +956,9 @@ async function dispatchTuiAction({
   >;
   readonly setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
 }) {
+  const currentItem =
+    itemsState.status === "ready" ? itemsState.items[selectedIndex] : undefined;
+
   switch (actionId) {
     case "app.quit":
       exit();
@@ -938,8 +984,7 @@ async function dispatchTuiAction({
       if (helpMode !== "none" || itemsState.status !== "ready") {
         return;
       }
-      const currentItem = itemsState.items[selectedIndex];
-      if (!currentItem) {
+      if (!currentItem || !itemCapabilities[currentItem.kind].workflow) {
         return;
       }
       const result = await appStore.dispatch(
@@ -966,8 +1011,7 @@ async function dispatchTuiAction({
       if (helpMode !== "none" || itemsState.status !== "ready") {
         return;
       }
-      const currentItem = itemsState.items[selectedIndex];
-      if (!currentItem) {
+      if (!currentItem || !itemCapabilities[currentItem.kind].priority) {
         return;
       }
       const result = await appStore.dispatch("items.priority.toggle", {

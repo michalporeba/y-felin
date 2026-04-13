@@ -32,14 +32,19 @@ export function baseItemTriples(
   item: {
     readonly title: string;
     readonly createdAt: string;
-    readonly priority: PriorityLevel;
   },
 ): Triple[] {
   return [
     [subject, vocabulary.title, item.title],
     [subject, vocabulary.created, item.createdAt],
-    [subject, vocabulary.priority, priorityToRdf(item.priority)],
   ];
+}
+
+export function priorityTriple(
+  subject: ReturnType<typeof vocabulary.uri>,
+  priority: PriorityLevel,
+): Triple {
+  return [subject, vocabulary.priority, priorityToRdf(priority)];
 }
 
 export function projectPriority(

@@ -116,7 +116,6 @@ describe("local lofipod persistence", () => {
         kind: "note",
         title: "Note entry",
         createdAt: "2026-04-09T01:00:00.000Z",
-        priority: "normal",
       },
     ]);
 

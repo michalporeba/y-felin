@@ -6,6 +6,7 @@ import {
   describeSyncState,
   getPerspective,
   getPerspectiveHelp,
+  itemCapabilities,
   listPerspectives,
 } from "../src/core/index.js";
 import { createAndSaveDefaultItem, createLocalEngine } from "../src/index.js";
@@ -41,6 +42,13 @@ describe("shared core", () => {
         title: "Inbox",
         summary: "Primary perspective for capturing and reviewing items.",
       },
+    });
+  });
+
+  it("declares item capabilities by kind", () => {
+    expect(itemCapabilities).toEqual({
+      task: { priority: true, workflow: true },
+      note: { priority: false, workflow: false },
     });
   });
 
@@ -172,7 +180,6 @@ describe("shared core", () => {
         kind: "note",
         title: "Earlier note",
         createdAt: "2026-04-08T09:00:00.000Z",
-        priority: "normal",
       },
       {
         id: "task-1",
@@ -231,7 +238,6 @@ describe("shared core", () => {
         kind: "note",
         title: "Second oldest note",
         createdAt: "2026-04-08T09:00:00.000Z",
-        priority: "normal",
       },
     ]);
 
@@ -367,6 +373,55 @@ describe("shared core", () => {
         priority: "normal",
         workflowState: "open",
       },
+    });
+
+    await services.dispose();
+  });
+
+  it("leaves note workflow and priority unchanged through the shared action model", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-core-note-guards-"));
+    tempRoots.push(root);
+
+    const localEngine = createLocalEngine({ dataDir: root });
+    const services = createAppServices({ localEngine });
+    const store = createAppStore(services);
+
+    await createAndSaveDefaultItem(localEngine, {
+      id: "note-guard",
+      kind: "note",
+      title: "Immutable note actions",
+      createdAt: "2026-04-09T10:00:00.000Z",
+    });
+
+    await expect(
+      store.dispatch("items.workflow.next", { id: "note-guard" }),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        id: "note-guard",
+        kind: "note",
+        title: "Immutable note actions",
+        createdAt: "2026-04-09T10:00:00.000Z",
+      },
+    });
+
+    await expect(
+      store.dispatch("items.priority.toggle", { id: "note-guard" }),
+    ).resolves.toEqual({
+      ok: true,
+      value: {
+        id: "note-guard",
+        kind: "note",
+        title: "Immutable note actions",
+        createdAt: "2026-04-09T10:00:00.000Z",
+      },
+    });
+
+    await expect(localEngine.getNote("note-guard")).resolves.toEqual({
+      id: "note-guard",
+      kind: "note",
+      title: "Immutable note actions",
+      createdAt: "2026-04-09T10:00:00.000Z",
     });
 
     await services.dispose();

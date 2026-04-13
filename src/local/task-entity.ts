@@ -2,6 +2,7 @@ import { defineEntity, type EntityDefinition } from "lofipod";
 import type { Task } from "../core/items.js";
 import {
   baseItemTriples,
+  priorityTriple,
   projectPriority,
   projectWorkflowState,
   rdf,
@@ -31,6 +32,7 @@ export const TaskEntity: EntityDefinition<Task> = defineEntity<Task>({
     return [
       [subject, rdf.type, vocabulary.Task],
       ...baseItemTriples(subject, task),
+      priorityTriple(subject, task.priority),
       workflowStateTriple(subject, task.workflowState),
     ];
   },

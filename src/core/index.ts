@@ -3,9 +3,18 @@ export type { AppError, AppErrorCode } from "./errors.js";
 export {
   advanceWorkflowState,
   compareItemsOldestFirst,
+  itemCapabilities,
   rewindWorkflowState,
 } from "./items.js";
-export type { AnyItem, Note, PriorityLevel, Task, WorkflowState } from "./items.js";
+export type {
+  AnyItem,
+  ItemCapabilities,
+  ItemKind,
+  Note,
+  PriorityLevel,
+  Task,
+  WorkflowState,
+} from "./items.js";
 export {
   getPerspective,
   getPerspectiveHelp,

@@ -126,7 +126,7 @@ describe("TuiShell", () => {
   });
 
   it("renders the shell with both bars visible", () => {
-    const app = render(<TuiShell dimensions={{ columns: 100, rows: 30 }} />);
+    const app = render(<TuiShell dimensions={{ columns: 140, rows: 30 }} />);
 
     expectFrameToContainAll(app.lastFrame(), [
       "MELIN",
@@ -137,7 +137,11 @@ describe("TuiShell", () => {
       "Focus: none",
       "Editor: idle",
       "sync local-only",
+      `${bindingFor("cursor.up")} up`,
+      `${bindingFor("app.quit")} quit`,
     ]);
+    expect(app.lastFrame()).not.toContain(`${bindingFor("entry.create.task")} task`);
+    expect(app.lastFrame()).not.toContain(`${bindingFor("entry.priority.toggle")} priority`);
 
     app.unmount();
   });
@@ -456,7 +460,6 @@ describe("TuiShell", () => {
       kind: "note",
       title: "Remember this",
       createdAt: "2026-04-09T13:00:00.000Z",
-      priority: "normal",
     });
 
     app.unmount();
@@ -602,6 +605,49 @@ describe("TuiShell", () => {
       createdAt: "2026-04-09T09:00:00.000Z",
       priority: "normal",
       workflowState: "open",
+    });
+
+    app.unmount();
+    await services.dispose();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("suppresses unsupported note actions and note key hints", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-note-guards-"));
+    const localEngine = createLocalEngine({ dataDir: root });
+    await createAndSaveDefaultItem(localEngine, {
+      id: "note-1",
+      kind: "note",
+      title: "Reference note",
+      createdAt: "2026-04-09T09:00:00.000Z",
+    });
+
+    const services = createAppServices({ localEngine });
+    const app = render(
+      <TuiShell dimensions={{ columns: 140, rows: 20 }} services={services} />,
+    );
+
+    await wait(100);
+
+    expect(app.lastFrame()).toContain(">  -  Reference note");
+    expect(app.lastFrame()).not.toContain(`${bindingFor("entry.workflow.previous")} left`);
+    expect(app.lastFrame()).not.toContain(`${bindingFor("entry.workflow.next")} right`);
+    expect(app.lastFrame()).not.toContain(`${bindingFor("entry.priority.toggle")} priority`);
+    expect(app.lastFrame()).toContain(`${bindingFor("entry.edit")} edit`);
+
+    await pressAction(app, "entry.workflow.next");
+    await wait(20);
+    expect(app.lastFrame()).toContain(">  -  Reference note");
+
+    await pressAction(app, "entry.priority.toggle");
+    await wait(20);
+    expect(app.lastFrame()).toContain(">  -  Reference note");
+
+    await expect(localEngine.getNote("note-1")).resolves.toEqual({
+      id: "note-1",
+      kind: "note",
+      title: "Reference note",
+      createdAt: "2026-04-09T09:00:00.000Z",
     });
 
     app.unmount();

@@ -1,5 +1,11 @@
 export type WorkflowState = "open" | "active" | "done";
 export type PriorityLevel = "normal" | "high";
+export type ItemKind = "task" | "note";
+
+export type ItemCapabilities = {
+  readonly priority: boolean;
+  readonly workflow: boolean;
+};
 
 export type Task = {
   readonly id: string;
@@ -15,10 +21,14 @@ export type Note = {
   readonly kind: "note";
   readonly title: string;
   readonly createdAt: string;
-  readonly priority: PriorityLevel;
 };
 
 export type AnyItem = Task | Note;
+
+export const itemCapabilities: Record<ItemKind, ItemCapabilities> = {
+  task: { priority: true, workflow: true },
+  note: { priority: false, workflow: false },
+};
 
 export function compareItemsOldestFirst(
   left: AnyItem,

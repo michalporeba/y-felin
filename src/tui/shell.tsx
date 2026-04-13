@@ -3,7 +3,6 @@ import { Box, Text, useApp, useInput, useWindowSize } from "ink";
 import {
   createAppServices,
   createAppStore,
-  describeSyncState,
   getPerspective,
   getPerspectiveHelp,
   itemCapabilities,
@@ -469,15 +468,16 @@ function BottomBar({
       : composer.mode === "edit"
         ? "editing"
         : `creating ${composer.kind ?? "task"}`;
+  const syncLabel = syncState.configured
+    ? `sync ${syncState.status} | pending ${syncState.pendingChanges}`
+    : `sync local-only | pending ${syncState.pendingChanges}`;
 
   return (
     <Box flexDirection="column" width={columns}>
       <FullWidthRule columns={columns} />
       <Box width={columns} paddingX={1}>
         <Text {...defaultTuiTheme.muted} wrap="truncate-end">
-          size {columns}x{rows} | {focusLabel} | {composerLabel} | {describeSyncState(
-            syncState,
-          )} | {keyHints}
+          size {columns}x{rows} | {focusLabel} | {composerLabel} | {syncLabel} | {keyHints}
         </Text>
       </Box>
     </Box>

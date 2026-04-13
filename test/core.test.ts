@@ -3,7 +3,6 @@ import {
   createAppServices,
   createAppStore,
   createActionRegistry,
-  describeSyncState,
   advanceWorkflowState,
   getPerspective,
   getPerspectiveHelp,
@@ -523,14 +522,6 @@ describe("shared core", () => {
         pendingChanges: 0,
       },
     });
-
-    expect(
-      describeSyncState({
-        status: "unconfigured",
-        configured: false,
-        pendingChanges: 0,
-      }),
-    ).toBe("sync local-only | pending 0");
 
     await services.dispose();
   });

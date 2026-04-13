@@ -136,7 +136,7 @@ describe("TuiShell", () => {
       "Loading inbox...",
       "Focus: none",
       "Editor: idle",
-      "sync local-only",
+      "sync local-only | pending 0",
       `${bindingFor("cursor.up")} up`,
       `${bindingFor("app.quit")} quit`,
     ]);
@@ -170,7 +170,7 @@ describe("TuiShell", () => {
       "rows 22",
       "size 80x24",
       "Focus: none",
-      "sync local-only",
+      "sync local-only | pending 0",
     ]);
 
     app.rerender(<TuiShell dimensions={{ columns: 96, rows: 28 }} />);
@@ -182,7 +182,7 @@ describe("TuiShell", () => {
       "rows 26",
       "size 96x28",
       "Focus: none",
-      "sync local-only",
+      "sync local-only | pending 0",
     ]);
 
     app.unmount();
@@ -242,7 +242,7 @@ describe("TuiShell", () => {
     expectFrameToContainAll(app.lastFrame(), [
       "[Inbox]",
       "Editor: idle",
-      "sync local-only",
+      "sync local-only | pending 1",
     ]);
 
     app.unmount();

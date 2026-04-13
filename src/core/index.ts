@@ -28,7 +28,7 @@ export {
 } from "./perspectives.js";
 export { createActionRegistry, type ActionRegistry } from "./registry.js";
 export { err, ok, type AppResult } from "./results.js";
-export { describeSyncState, type SyncState } from "./sync.js";
+export type { SyncState } from "./sync.js";
 export {
   createAppServices,
   type AppServices,

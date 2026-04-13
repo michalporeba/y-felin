@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { render } from "ink-testing-library";
 import fs from "node:fs";
 import os from "node:os";
@@ -43,6 +43,14 @@ function bindingFor(actionId: TuiActionId, config?: KeymapConfig): string {
 async function wait(ms = 20) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+const tempRoots: string[] = [];
+
+afterEach(() => {
+  for (const root of tempRoots.splice(0, tempRoots.length)) {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 async function pressAction(
   app: ReturnType<typeof render>,
@@ -250,6 +258,7 @@ describe("TuiShell", () => {
 
   it("renders persisted inbox items and supports keyboard navigation", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-test-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -294,11 +303,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("supports inline capture submit and immediate list refresh", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-capture-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({
       localEngine,
@@ -346,11 +355,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("shows the inline create row at the bottom of the inbox", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-create-bottom-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -387,11 +396,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("supports inline capture cancel", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-cancel-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const app = render(
@@ -420,11 +429,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("creates notes with the n shortcut", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-note-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({
       localEngine,
@@ -464,11 +473,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("supports item-scoped edit and preserves focus", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-edit-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -527,11 +536,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("advances and rewinds task workflow with l and h", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-workflow-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -570,11 +579,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("toggles task priority with p", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-priority-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "item-1",
@@ -609,11 +618,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("suppresses unsupported note actions and note key hints", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-note-guards-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     await createAndSaveDefaultItem(localEngine, {
       id: "note-1",
@@ -652,11 +661,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("renders help and actions from a custom keymap configuration", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-keymap-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const customKeymap: KeymapConfig = {
@@ -711,11 +720,11 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 
   it("shows global help using the active bindings when a perspective overrides a global key", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "y-felin-tui-help-override-"));
+    tempRoots.push(root);
     const localEngine = createLocalEngine({ dataDir: root });
     const services = createAppServices({ localEngine });
     const customKeymap: KeymapConfig = {
@@ -749,6 +758,5 @@ describe("TuiShell", () => {
 
     app.unmount();
     await services.dispose();
-    fs.rmSync(root, { recursive: true, force: true });
   });
 });

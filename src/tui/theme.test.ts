@@ -4,7 +4,7 @@ import {
   fillLine,
   markerForItem,
   markerVocabulary,
-} from "../src/tui/theme.js";
+} from "./theme.js";
 
 describe("defaultTuiTheme", () => {
   it("uses inversion for the top bar", () => {

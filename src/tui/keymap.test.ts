@@ -5,7 +5,7 @@ import {
   parseBindingExpression,
   primaryBindingForAction,
   strokeFromInput,
-} from "../src/tui/keymap.js";
+} from "./keymap.js";
 
 describe("tui keymap", () => {
   it("parses single keys, modified keys, and sequences", () => {

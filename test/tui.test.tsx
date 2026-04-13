@@ -4,7 +4,6 @@ import { render } from "ink-testing-library";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { resolveShellLayout } from "../src/tui/layout.js";
 import { TuiShell } from "../src/tui/shell.js";
 import {
   compileKeymap,
@@ -76,42 +75,6 @@ async function pressBinding(app: ReturnType<typeof render>, binding: string) {
     await wait(10);
   }
 }
-
-describe("resolveShellLayout", () => {
-  it("allocates bars and main area when both bars are visible", () => {
-    expect(
-      resolveShellLayout({
-        columns: 120,
-        rows: 40,
-        showTopBar: true,
-        showBottomBar: true,
-      }),
-    ).toEqual({
-      columns: 120,
-      rows: 40,
-      topBarHeight: 1,
-      bottomBarHeight: 1,
-      mainHeight: 38,
-    });
-  });
-
-  it("preserves a usable main area when bars are hidden", () => {
-    expect(
-      resolveShellLayout({
-        columns: 90,
-        rows: 10,
-        showTopBar: false,
-        showBottomBar: false,
-      }),
-    ).toEqual({
-      columns: 90,
-      rows: 10,
-      topBarHeight: 0,
-      bottomBarHeight: 0,
-      mainHeight: 10,
-    });
-  });
-});
 
 describe("TuiShell", () => {
   it("leaves the TUI data directory unset by default", () => {

@@ -130,20 +130,22 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           return err(appError("invalid_input", message));
         }
 
-        const existing = await getAnyItem(requireLocalEngine(), id);
+        const local = requireLocalEngine();
+        const existing = await getAnyItem(local, id);
         if (!existing) {
           return err(appError("not_found", `Unknown item: ${id}`));
         }
 
         return ok(
-          await saveAnyItem(requireLocalEngine(), {
+          await saveAnyItem(local, {
             ...existing,
             title: validatedTitle,
           }),
         );
       },
       async advanceWorkflow({ id }) {
-        const existing = await getAnyItem(requireLocalEngine(), id);
+        const local = requireLocalEngine();
+        const existing = await getAnyItem(local, id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
@@ -152,13 +154,14 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           return existing;
         }
 
-        return requireLocalEngine().saveTask({
+        return local.saveTask({
           ...existing,
           workflowState: advanceWorkflowState(existing.workflowState),
         });
       },
       async rewindWorkflow({ id }) {
-        const existing = await getAnyItem(requireLocalEngine(), id);
+        const local = requireLocalEngine();
+        const existing = await getAnyItem(local, id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
@@ -167,13 +170,14 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           return existing;
         }
 
-        return requireLocalEngine().saveTask({
+        return local.saveTask({
           ...existing,
           workflowState: rewindWorkflowState(existing.workflowState),
         });
       },
       async togglePriority({ id }) {
-        const existing = await getAnyItem(requireLocalEngine(), id);
+        const local = requireLocalEngine();
+        const existing = await getAnyItem(local, id);
         if (!existing) {
           throw new Error(`Unknown item: ${id}`);
         }
@@ -182,7 +186,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
           return existing;
         }
 
-        return saveAnyItem(requireLocalEngine(), {
+        return saveAnyItem(local, {
           ...existing,
           priority: togglePriorityLevel(existing.priority),
         });

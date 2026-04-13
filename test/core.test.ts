@@ -485,7 +485,7 @@ describe("shared core", () => {
     ).resolves.toEqual({
       ok: false,
       error: {
-        code: "invalid_input",
+        code: "not_found",
         message: "Unknown item: missing",
       },
     });
@@ -501,7 +501,7 @@ describe("shared core", () => {
     ).resolves.toEqual({
       ok: false,
       error: {
-        code: "invalid_input",
+        code: "not_found",
         message: "Unknown perspective: today",
       },
     });

@@ -1,4 +1,5 @@
 import type { AppServices } from "./services.js";
+import type { AppResult } from "./results.js";
 
 import type { AnyItem } from "./items.js";
 import type { PerspectiveDefinition, PerspectiveId } from "./perspectives.js";
@@ -59,7 +60,11 @@ export type ActionDefinition<TActionId extends ActionId> = {
   readonly run: (
     input: ActionMap[TActionId]["input"],
     services: AppServices,
-  ) => Promise<ActionMap[TActionId]["output"]> | ActionMap[TActionId]["output"];
+  ) =>
+    | Promise<ActionMap[TActionId]["output"]>
+    | Promise<AppResult<ActionMap[TActionId]["output"]>>
+    | ActionMap[TActionId]["output"]
+    | AppResult<ActionMap[TActionId]["output"]>;
 };
 
 export type AnyActionDefinition = {

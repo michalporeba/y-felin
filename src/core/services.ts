@@ -16,6 +16,8 @@ import {
   togglePriorityLevel,
   validateItemTitle,
 } from "./items.js";
+import { appError } from "./errors.js";
+import { err, ok, type AppResult } from "./results.js";
 import type { SyncState } from "./sync.js";
 
 export type AppServices = {
@@ -28,11 +30,11 @@ export type AppServices = {
     readonly create: (input: {
       readonly kind: AnyItem["kind"];
       readonly title: string;
-    }) => Promise<AnyItem>;
+    }) => Promise<AppResult<AnyItem>>;
     readonly update: (input: {
       readonly id: string;
       readonly title: string;
-    }) => Promise<AnyItem>;
+    }) => Promise<AppResult<AnyItem>>;
     readonly advanceWorkflow: (input: {
       readonly id: string;
     }) => Promise<AnyItem>;
@@ -84,7 +86,14 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         return options?.limit ? items.slice(0, options.limit) : items;
       },
       async create({ kind, title }) {
-        const validatedTitle = validateItemTitle(title);
+        let validatedTitle: string;
+        try {
+          validatedTitle = validateItemTitle(title);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Invalid item title.";
+          return err(appError("invalid_input", message));
+        }
 
         const local = requireLocalEngine();
         const base = {
@@ -94,31 +103,44 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         };
 
         if (kind === "note") {
-          return local.saveNote({
-            ...base,
-            kind: "note",
-          });
+          return ok(
+            await local.saveNote({
+              ...base,
+              kind: "note",
+            }),
+          );
         }
 
-        return local.saveTask({
-          ...base,
-          kind: "task",
-          priority: "normal" as PriorityLevel,
-          workflowState: "open",
-        });
+        return ok(
+          await local.saveTask({
+            ...base,
+            kind: "task",
+            priority: "normal" as PriorityLevel,
+            workflowState: "open",
+          }),
+        );
       },
       async update({ id, title }) {
-        const validatedTitle = validateItemTitle(title);
+        let validatedTitle: string;
+        try {
+          validatedTitle = validateItemTitle(title);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "Invalid item title.";
+          return err(appError("invalid_input", message));
+        }
 
         const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
-          throw new Error(`Unknown item: ${id}`);
+          return err(appError("not_found", `Unknown item: ${id}`));
         }
 
-        return saveAnyItem(requireLocalEngine(), {
-          ...existing,
-          title: validatedTitle,
-        });
+        return ok(
+          await saveAnyItem(requireLocalEngine(), {
+            ...existing,
+            title: validatedTitle,
+          }),
+        );
       },
       async advanceWorkflow({ id }) {
         const existing = await getAnyItem(requireLocalEngine(), id);

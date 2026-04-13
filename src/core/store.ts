@@ -1,7 +1,7 @@
 import type { ActionId, ActionMap } from "./actions.js";
 import { appError } from "./errors.js";
 import { createActionRegistry, type ActionRegistry } from "./registry.js";
-import { ok, type AppResult } from "./results.js";
+import { err, ok, type AppResult } from "./results.js";
 import type { AppServices } from "./services.js";
 import { getPerspective } from "./perspectives.js";
 
@@ -15,12 +15,7 @@ const registry = createActionRegistry([
   {
     id: "perspectives.show",
     run(input) {
-      const result = getPerspective(input.perspectiveId);
-      if (!result.ok) {
-        throw new Error(result.error.message);
-      }
-
-      return result.value;
+      return getPerspective(input.perspectiveId);
     },
   },
   {
@@ -88,15 +83,25 @@ export function createAppStore(services: AppServices): AppStore {
 
       try {
         const value = await action.run(input as never, services);
+        if (isAppResult(value)) {
+          return value;
+        }
+
         return ok(value);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Unknown action failure";
-        return {
-          ok: false,
-          error: appError("invalid_input", message),
-        };
+        return err(appError("invalid_input", message));
       }
     },
   };
+}
+
+function isAppResult<T>(value: T | AppResult<T>): value is AppResult<T> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "ok" in value &&
+    typeof value.ok === "boolean"
+  );
 }

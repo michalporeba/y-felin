@@ -2,6 +2,8 @@
   "name": "@michalporeba/y-felin",
   "version": "0.1.1",
   "description": "A TUI bullet-journal / personal task manager keeping the data local with an option of syncing it to SOLID Pods.",
+  "author": "Michał Poręba <michalporeba@gmail.com>",
+  "repository": "github:michalporeba/y-felin",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -20,6 +22,16 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "tui": "node --import tsx src/tui.tsx --data-dir=./data",
     "test": "vitest run"
+  },
+  "keywords": [
+      "local-first",
+      "rdf",
+      "todo",
+      "tui",
+      "solid-pod"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "ink": "^7.0.0",

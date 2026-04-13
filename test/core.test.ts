@@ -84,16 +84,6 @@ describe("shared core", () => {
   it("dispatches shared actions without any UI adapter", async () => {
     const store = createAppStore(createAppServices());
 
-    await expect(store.dispatch("app.describe", { surface: "cli" })).resolves.toEqual({
-      ok: true,
-      value: {
-        name: "y-felin",
-        version: "0.0.0",
-        surface: "cli",
-        message: "y-felin CLI placeholder",
-      },
-    });
-
     await expect(store.dispatch("perspectives.list", undefined)).resolves.toEqual(
       {
         ok: true,

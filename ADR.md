@@ -27,17 +27,16 @@ this file records the architectural direction those steps should follow.
 - The application should be implemented in TypeScript.
 - The primary TUI implementation should use Ink.
 - The initial runtime target should be Node.js `24+`.
-- The architecture should keep a shared application core so future front ends
-  can reuse domain logic without coupling to Ink.
+- The architecture should keep a shared application core so the TUI can reuse
+  domain logic without coupling UI behavior into persistence or item services.
 
-### TUI and CLI relationship
+### TUI shape
 
-- Every user action exposed in the TUI should also be available through the
-  command line.
-- The CLI should use a verb-first command grammar such as `fln create item`
-  and `fln show inbox`.
-- TUI keybindings and CLI commands should dispatch the same application
-  actions rather than maintain separate business logic.
+- y-felin is TUI-first and currently TUI-only.
+- The `fln` binary should launch the alternate-screen Ink application
+  directly.
+- The `--data-dir` flag remains supported at the binary entry point so users
+  and tests can override the local storage location.
 
 ### UI structure
 
@@ -103,6 +102,8 @@ this file records the architectural direction those steps should follow.
 - The architecture should support behaviour-focused acceptance testing.
 - The default test strategy should be BDD acceptance tests backed by focused
   unit and component tests.
+- Shared core actions may be exercised directly in tests without a separate
+  CLI adapter.
 
 ## Known boundaries
 

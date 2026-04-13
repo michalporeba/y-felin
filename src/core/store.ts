@@ -4,20 +4,8 @@ import { createActionRegistry, type ActionRegistry } from "./registry.js";
 import { ok, type AppResult } from "./results.js";
 import type { AppServices } from "./services.js";
 import { getPerspective } from "./perspectives.js";
-import { describeApp } from "./app.js";
 
 const registry = createActionRegistry([
-  {
-    id: "app.describe",
-    run(input) {
-      const result = describeApp(input.surface);
-      if (!result.ok) {
-        throw new Error(result.error.message);
-      }
-
-      return result.value;
-    },
-  },
   {
     id: "perspectives.list",
     run(_input, services) {

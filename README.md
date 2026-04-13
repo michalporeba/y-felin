@@ -8,7 +8,10 @@ I like simple local-first experience with context based on what I'm working on.
 I use simplicity of todo-lists to manage my day with some features of bullet journals.
 
 A solution might be a simple, full screen TUI application, with bindings compatible with neovim
-that will allow me to manage tasks in on a local file system, but synchronise it to my SOLID Pod. 
+that will allow me to manage tasks on a local file system, but synchronise them to my SOLID Pod.
+
+The current executable surface is the TUI launched by `fln`. The binary accepts
+`--data-dir` to override the local storage location.
 
 ## ADR
 

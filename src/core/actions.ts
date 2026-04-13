@@ -5,7 +5,6 @@ import type { PerspectiveDefinition, PerspectiveId } from "./perspectives.js";
 import type { SyncState } from "./sync.js";
 
 export type ActionId =
-  | "app.describe"
   | "perspectives.list"
   | "perspectives.show"
   | "items.list"
@@ -17,15 +16,6 @@ export type ActionId =
   | "sync.state";
 
 export type ActionMap = {
-  "app.describe": {
-    input: { surface: "cli" | "tui" };
-    output: {
-      name: "y-felin";
-      version: string;
-      surface: "cli" | "tui";
-      message: string;
-    };
-  };
   "perspectives.list": {
     input: void;
     output: PerspectiveId[];

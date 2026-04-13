@@ -11,8 +11,9 @@ this file is the sequential roadmap.
 - Build y-felin in TypeScript.
 - Use Ink for the primary TUI.
 - Keep the TUI full-screen and resize-aware.
-- Keep all user actions scriptable through a CLI as well as the TUI.
-- Use a shared application core so TUI and CLI dispatch the same actions.
+- Keep the product focused on the full-screen TUI rather than a parallel CLI.
+- Use a shared application core so the TUI dispatches actions without coupling
+  UI code into services or persistence.
 - Target Node.js `24+`.
 - Use `lofipod/node` with SQLite for local persistence.
 - Keep the first user-facing flow local-only; sync remains a seam for later.
@@ -56,14 +57,13 @@ this file is the sequential roadmap.
 - Scope:
   - package metadata
   - TypeScript config
-  - entrypoint structure for core, CLI, and TUI
+  - entrypoint structure for core and TUI
   - test runner baseline
 - Acceptance:
   - dependencies install cleanly
-  - a placeholder command runs
+  - the TUI entry point runs
   - tests can be executed
 - Non-goals:
-  - no real TUI behavior
   - no persistence integration
 
 ### Step 3: Shared action model
@@ -76,25 +76,10 @@ this file is the sequential roadmap.
   - minimal item summary type
 - Acceptance:
   - core actions can be invoked without Ink
-  - the same action contract is usable by CLI and TUI adapters
 - Non-goals:
   - no `lofipod` integration yet
 
-### Step 4: CLI vertical slice
-
-- Goal: prove the verb-first command model early.
-- Scope:
-  - commands such as `fln show inbox`, `fln create item`, `fln list items`
-  - human-readable output
-  - optional `--json` output
-  - stable exit-code behavior
-- Acceptance:
-  - acceptance tests cover command invocation and output
-  - CLI handlers go through shared actions
-- Non-goals:
-  - no alternate-screen TUI yet
-
-### Step 5: Ink shell
+### Step 4: Ink shell
 
 - Goal: establish the full-screen TUI shell.
 - Scope:
@@ -108,7 +93,7 @@ this file is the sequential roadmap.
 - Non-goals:
   - no real data yet
 
-### Step 6: Local persistence with lofipod
+### Step 5: Local persistence with lofipod
 
 - Goal: connect y-felin to `lofipod/node` with SQLite.
 - Scope:
@@ -122,7 +107,7 @@ this file is the sequential roadmap.
 - Non-goals:
   - no real Pod sync workflow
 
-### Step 7: Inbox list flow
+### Step 6: Inbox list flow
 
 - Goal: make the inbox perspective useful for reading and navigating items.
 - Scope:
@@ -132,11 +117,10 @@ this file is the sequential roadmap.
   - empty-state behavior
 - Acceptance:
   - inbox opens and displays stored items
-  - CLI listing and TUI listing share the same selector behavior
 - Non-goals:
   - no inline capture yet
 
-### Step 8: Inline capture flow
+### Step 7: Inline capture flow
 
 - Goal: support the first real interactive creation workflow.
 - Scope:
@@ -146,11 +130,10 @@ this file is the sequential roadmap.
   - immediate list refresh after save
 - Acceptance:
   - acceptance tests cover capture, cancel, save, and restart persistence
-  - TUI and CLI creation use the same core action
 - Non-goals:
   - no editing existing items yet
 
-### Step 9: Item-scoped edit flow
+### Step 8: Item-scoped edit flow
 
 - Goal: allow in-place editing of one selected item.
 - Scope:
@@ -164,12 +147,12 @@ this file is the sequential roadmap.
   - no bulk editing
   - no sidecar
 
-### Step 10: Sync status seam
+### Step 9: Sync status seam
 
 - Goal: surface sync as a seam without making it a required workflow.
 - Scope:
   - sync status boundary in the core
-  - dormant/local-only sync state in CLI and TUI
+  - dormant/local-only sync state in the TUI
   - placeholders for future attach/bootstrap actions
 - Acceptance:
   - local-only usage remains the default
@@ -177,7 +160,7 @@ this file is the sequential roadmap.
 - Non-goals:
   - no Pod login or attachment flow
 
-### Step 11: Review and next-slice decision
+### Step 10: Review and next-slice decision
 
 - Goal: reassess scope after the first usable local inbox exists.
 - Scope:
@@ -196,7 +179,7 @@ this file is the sequential roadmap.
 - Every step should define explicit acceptance checks.
 - Prefer acceptance scenarios for user-visible behavior.
 - Support them with focused unit and component tests.
-- Use CLI tests early because they validate shared actions without TUI
+- Use core tests early because they validate shared actions without TUI
   rendering complexity.
 - Use Ink component tests once the shell and inbox flows exist.
 - Defer real Solid integration tests until Pod workflows are in scope.

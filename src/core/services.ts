@@ -13,6 +13,8 @@ import {
   type PriorityLevel,
   type Task,
   rewindWorkflowState,
+  togglePriorityLevel,
+  validateItemTitle,
 } from "./items.js";
 import type { SyncState } from "./sync.js";
 
@@ -82,15 +84,12 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         return options?.limit ? items.slice(0, options.limit) : items;
       },
       async create({ kind, title }) {
-        const trimmedTitle = title.trim();
-        if (!trimmedTitle) {
-          throw new Error("Item title cannot be empty.");
-        }
+        const validatedTitle = validateItemTitle(title);
 
         const local = requireLocalEngine();
         const base = {
           id: idGenerator(),
-          title: trimmedTitle,
+          title: validatedTitle,
           createdAt: now(),
         };
 
@@ -109,10 +108,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
         });
       },
       async update({ id, title }) {
-        const trimmedTitle = title.trim();
-        if (!trimmedTitle) {
-          throw new Error("Item title cannot be empty.");
-        }
+        const validatedTitle = validateItemTitle(title);
 
         const existing = await getAnyItem(requireLocalEngine(), id);
         if (!existing) {
@@ -121,7 +117,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
 
         return saveAnyItem(requireLocalEngine(), {
           ...existing,
-          title: trimmedTitle,
+          title: validatedTitle,
         });
       },
       async advanceWorkflow({ id }) {
@@ -166,7 +162,7 @@ export function createAppServices(input: AppServicesInput = {}): AppServices {
 
         return saveAnyItem(requireLocalEngine(), {
           ...existing,
-          priority: existing.priority === "high" ? "normal" : "high",
+          priority: togglePriorityLevel(existing.priority),
         });
       },
     },

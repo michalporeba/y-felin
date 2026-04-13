@@ -3,7 +3,6 @@ import type { Note } from "../core/items.js";
 import {
   baseItemTriples,
   rdf,
-  rdfUri,
   stringValue,
   vocabulary,
 } from "./vocabulary.js";

@@ -6,7 +6,6 @@ import {
   projectPriority,
   projectWorkflowState,
   rdf,
-  rdfUri,
   stringValue,
   vocabulary,
   workflowStateTriple,

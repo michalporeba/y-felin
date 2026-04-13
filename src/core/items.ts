@@ -42,6 +42,21 @@ export function compareItemsOldestFirst(
   return left.id.localeCompare(right.id);
 }
 
+export function validateItemTitle(title: string): string {
+  const trimmed = title.trim();
+  if (!trimmed) {
+    throw new Error("Item title cannot be empty.");
+  }
+
+  return trimmed;
+}
+
+export function togglePriorityLevel(
+  current: PriorityLevel,
+): PriorityLevel {
+  return current === "high" ? "normal" : "high";
+}
+
 const workflowOrder: readonly WorkflowState[] = ["open", "active", "done"];
 
 export function advanceWorkflowState(

@@ -5,6 +5,8 @@ export {
   compareItemsOldestFirst,
   itemCapabilities,
   rewindWorkflowState,
+  togglePriorityLevel,
+  validateItemTitle,
 } from "./items.js";
 export type {
   AnyItem,

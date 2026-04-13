@@ -16,4 +16,5 @@ export {
   TaskEntity,
   createDefaultTask,
 } from "./task-entity.js";
-export { vocabulary, rdfUri } from "./vocabulary.js";
+export { vocabulary } from "./vocabulary.js";
+export type { rdfUri } from "./vocabulary.js";

@@ -4,10 +4,14 @@ import {
   createAppStore,
   createActionRegistry,
   describeSyncState,
+  advanceWorkflowState,
   getPerspective,
   getPerspectiveHelp,
   itemCapabilities,
   listPerspectives,
+  rewindWorkflowState,
+  togglePriorityLevel,
+  validateItemTitle,
 } from "../src/core/index.js";
 import { createAndSaveDefaultItem, createLocalEngine } from "../src/index.js";
 import fs from "node:fs";
@@ -50,6 +54,26 @@ describe("shared core", () => {
       task: { priority: true, workflow: true },
       note: { priority: false, workflow: false },
     });
+  });
+
+  it("validates item titles in the domain layer", () => {
+    expect(validateItemTitle("  Example  ")).toBe("Example");
+    expect(() => validateItemTitle("   ")).toThrow("Item title cannot be empty.");
+  });
+
+  it("toggles priority levels in the domain layer", () => {
+    expect(togglePriorityLevel("normal")).toBe("high");
+    expect(togglePriorityLevel("high")).toBe("normal");
+  });
+
+  it("advances and rewinds workflow states in the domain layer", () => {
+    expect(advanceWorkflowState("open")).toBe("active");
+    expect(advanceWorkflowState("active")).toBe("done");
+    expect(advanceWorkflowState("done")).toBe("done");
+
+    expect(rewindWorkflowState("done")).toBe("active");
+    expect(rewindWorkflowState("active")).toBe("open");
+    expect(rewindWorkflowState("open")).toBe("open");
   });
 
   it("returns help for a perspective by id", () => {

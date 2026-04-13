@@ -79,13 +79,13 @@ describe("tui keymap", () => {
     expect(primaryBindingForAction(compiled, "app.quit")).toBeNull();
   });
 
-  it("rejects bindings that are both complete actions and sequence prefixes", () => {
+  it("throws when a binding is both complete and a prefix", () => {
     expect(() =>
       compileKeymap({
         leader: "<space>",
         global: {
           g: "app.quit",
-          "g g": "help.context",
+          "g j": "help.context",
         },
         perspectives: {},
       }),

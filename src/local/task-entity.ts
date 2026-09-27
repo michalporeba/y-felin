@@ -12,7 +12,7 @@ import {
 } from "./vocabulary.js";
 
 export const TaskEntity: EntityDefinition<Task> = defineEntity<Task>({
-  name: "task",
+  kind: "task",
   pod: {
     basePath: "tasks/",
   },

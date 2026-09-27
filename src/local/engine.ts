@@ -56,7 +56,11 @@ export function createLocalEngine(
       return engine.list<Note>("note", options);
     },
     syncState() {
-      return engine.sync.state();
+      return engine.sync.state().then(({ status, configured, pendingChanges }) => ({
+        status,
+        configured,
+        pendingChanges,
+      }));
     },
     dispose() {
       return engine.dispose();

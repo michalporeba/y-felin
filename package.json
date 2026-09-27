@@ -24,26 +24,26 @@
     "test": "vitest run"
   },
   "keywords": [
-      "local-first",
-      "rdf",
-      "todo",
-      "tui",
-      "solid-pod"
+    "local-first",
+    "rdf",
+    "todo",
+    "tui",
+    "solid-pod"
   ],
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "ink": "^7.0.0",
-    "lofipod": "^0.2.0",
-    "react": "^19.2.0"
+    "ink": "^7.1.1",
+    "lofipod": "^0.2.1",
+    "react": "^19.3.0"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "@types/react": "^19.2.2",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
     "ink-testing-library": "^4.0.0",
-    "tsx": "^4.20.6",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.4"
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
   }
 }

@@ -10,6 +10,17 @@ This document captures the decisions that should remain stable while the
 implementation evolves in small slices. `PLANS.md` is the delivery roadmap;
 this file records the architectural direction those steps should follow.
 
+## Product direction update — 26 September 2026
+
+[DIRECTION.md](DIRECTION.md) records the agreed evolution toward a modular TUI
+host whose plugins and independent applications can work with compatible RDF
+data. Alternative plugins for the same capability should be possible. The host
+interface and the shared data conventions are separate contracts.
+
+The current TUI-only executable and narrow local-first delivery scope remain
+the implementation baseline. Plugin mechanics, additional interfaces, and the
+next capability require concrete follow-up design and delivery slices.
+
 ## Accepted decisions
 
 ### Product shape

@@ -6,6 +6,15 @@ This file breaks y-felin into small implementation slices that can be developed,
 tested, and reviewed independently. `ADR.md` records architecture decisions;
 this file is the sequential roadmap.
 
+## Next-cycle direction — 26 September 2026
+
+Continue work on y-felin using [DIRECTION.md](DIRECTION.md) as the product
+direction: a modular TUI workspace over interoperable personal RDF data, with
+room for alternative plugins and independent applications. Checklists (Ticks)
+and inventory (Stuffed) are candidate extensions; no new implementation slice
+has yet been selected. Review existing perspectives, actions, and mappings
+before adding a concrete next step to this roadmap.
+
 ## Current decisions and instructions
 
 - Build y-felin in TypeScript.

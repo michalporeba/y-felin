@@ -8,7 +8,7 @@ import {
 } from "./vocabulary.js";
 
 export const NoteEntity: EntityDefinition<Note> = defineEntity<Note>({
-  name: "note",
+  kind: "note",
   pod: {
     basePath: "notes/",
   },

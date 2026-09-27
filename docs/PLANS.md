@@ -9,11 +9,13 @@ this file is the sequential roadmap.
 ## Next-cycle direction — 26 September 2026
 
 Continue work on y-felin using [DIRECTION.md](DIRECTION.md) as the product
-direction: a modular TUI workspace over interoperable personal RDF data, with
-room for alternative plugins and independent applications. Checklists (Ticks)
-and inventory (Stuffed) are candidate extensions; no new implementation slice
-has yet been selected. Review existing perspectives, actions, and mappings
-before adding a concrete next step to this roadmap.
+direction. As clarified on 27 September, the immediate milestone is a usable
+bullet journal, not a second capability or general plugin platform. The active
+implementation brief is [JOURNAL_IMPLEMENTATION.md](JOURNAL_IMPLEMENTATION.md).
+It consolidates subsequent workflow and keyboard decisions and supersedes
+conflicting proposals in [JOURNAL_TASKS.md](JOURNAL_TASKS.md). The sequential steps
+below document the original roadmap, not the new journal scope. Specialised
+checklists and inventory remain later candidates.
 
 ## Current decisions and instructions
 

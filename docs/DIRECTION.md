@@ -4,7 +4,8 @@
 
 Prioritise further development of y-felin. Explore capabilities originally
 considered in Ticks, Stuffed, and related personal tools as possible extensions.
-The next implementation slice is still to be selected.
+The immediate milestone is a genuinely usable bullet journal, before adding
+checklists, inventory, or a general plugin platform.
 
 This records the direction agreed during the portfolio review. It describes
 intended evolution, not functionality already delivered.
@@ -22,8 +23,19 @@ plugins. Different plugins may offer alternative or complementary interfaces
 for the same functionality and records. Independent applications may overlap
 with those plugins without sharing their code or implementation language.
 
-Bullet journaling remains a useful default experience. It need not determine
-every plugin's workflow or be the only way to organise the workspace.
+Bullet journaling is the central product experience and the first functionality
+to implement and refine for everyday use. It need not determine every future
+plugin's workflow or be the only way to organise the workspace.
+
+### Priority clarification — 27 September 2026
+
+Perfect the journal workflow before expanding into Ticks, Stuffed, or other
+capabilities. Prefer a keyboard-first interaction model inspired by Neovim:
+distinct navigation and text-editing flows, and composable keystrokes. A leader
+may be useful but should not be required for routine work. Subsequent discussion
+settled the first workflow, capture grammar, explicit details panes, and autosave
+without undo. [JOURNAL_IMPLEMENTATION.md](JOURNAL_IMPLEMENTATION.md) is the current
+coding-agent brief; it supersedes conflicting proposals in the earlier backlog.
 
 ## Two separate contracts
 
@@ -70,11 +82,11 @@ or that all capabilities should be implemented as one application.
 
 ## Next planning step
 
-Inspect the current perspective registry, application actions, and RDF mappings.
-Choose a small vertical extension that preserves the existing local inbox and
-tests the modular direction. Checklists are a candidate, not an agreed next
-implementation task. Record concrete architecture decisions in ADR.md and the
-chosen delivery slice in PLANS.md.
+Implement [JOURNAL_IMPLEMENTATION.md](JOURNAL_IMPLEMENTATION.md) in tested slices.
+The journal itself is the initial capture surface; a separate inbox and future
+views are deferred. Validate the journal
+through actual use before choosing a second capability. Record concrete
+architecture decisions in ADR.md and delivery progress in PLANS.md.
 
 The portfolio decision is also recorded in
 `/home/michal/Work/projects-review/DECISIONS.md`.

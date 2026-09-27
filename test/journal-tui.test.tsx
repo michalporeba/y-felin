@@ -21,11 +21,55 @@ async function keys(app: ReturnType<typeof render>, sequence: string) {
 }
 
 describe("JournalShell", () => {
+  it("separates days visually and skips populated day headings while keeping empty days selectable", async () => {
+    const { services } = setup();
+    await services.journal.create({ kind: "note", title: "Earlier entry", journalDate: "2026-09-25", placement: "last" });
+    await services.journal.create({ kind: "note", title: "Today's entry", placement: "last" });
+    const app = render(<TuiShell services={services} dimensions={{ columns: 80, rows: 16 }} />);
+    await pause(30);
+    const lines = app.lastFrame().split("\n");
+    const earlier = lines.findIndex((line) => line.includes("Earlier entry"));
+    expect(earlier).toBeGreaterThan(0);
+    expect(lines[earlier + 1]?.trim()).toBe("");
+    expect(lines[earlier + 2]).toContain("2026-09-27");
+    expect(lines[1]?.trim()).toBe("");
+    expect(lines[2]).toContain("2026-09-25");
+    await keys(app, "gg");
+    expect(app.lastFrame()).toMatch(/>\s+-\s+Earlier entry/);
+    await keys(app, "j");
+    expect(app.lastFrame()).toMatch(/>\s+-\s+Today's entry/);
+    await keys(app, "gd");
+    for (let i = 0; i < 10; i++) { app.stdin.write("\u007f"); await pause(); }
+    await keys(app, "2026-09-26"); app.stdin.write("\r"); await pause(30);
+    expect(app.lastFrame()).toContain("> 2026-09-26");
+    await keys(app, "k");
+    expect(app.lastFrame()).toMatch(/>\s+-\s+Earlier entry/);
+    await keys(app, "j");
+    expect(app.lastFrame()).toContain("> 2026-09-26");
+    await keys(app, "j");
+    expect(app.lastFrame()).toMatch(/>\s+-\s+Today's entry/);
+    app.unmount(); await services.dispose();
+  });
+
+  it("shows a continuous divider at the start of the details pane", async () => {
+    const { services } = setup();
+    await services.journal.create({ kind: "idea", title: "Outlined idea", placement: "last" });
+    const app = render(<TuiShell services={services} dimensions={{ columns: 80, rows: 12 }} />);
+    await pause(30);
+    await keys(app, "o");
+    const lines = app.lastFrame().split("\n");
+    expect(lines[1]?.slice(0, 40).trim()).toBe("");
+    expect(lines[1]?.slice(41).trim()).toBe("");
+    expect(app.lastFrame()).not.toContain("Details · idea");
+    expect(lines.slice(1, -1).every((line) => line[40] === "│")).toBe(true);
+    app.unmount(); await services.dispose();
+  });
+
   it("opens on today, captures a note, and preserves focus after append from a past day", async () => {
     const { services } = setup();
     const app = render(<TuiShell services={services} dimensions={{ columns: 80, rows: 24 }} />);
     await pause(40);
-    expect(app.lastFrame()).toContain("Journal · 2026-09-27");
+    expect(app.lastFrame()).toContain("Journal | 2026-09-27");
     await keys(app, "an");
     await keys(app, "Today");
     await pause(520);
@@ -47,13 +91,13 @@ describe("JournalShell", () => {
     await services.journal.paragraph({ parentId: parent.id, text: "Some *detail*", placement: "last" });
     const app = render(<TuiShell services={services} dimensions={{ columns: 80, rows: 14 }} />);
     await pause(30);
-    expect(app.lastFrame()).not.toContain("Details · note");
+    expect(app.lastFrame()).not.toContain("# My note");
     await keys(app, "j"); await keys(app, "o");
-    expect(app.lastFrame()).toContain("Details · note");
+    expect(app.lastFrame()).toContain("# My note");
     expect(app.lastFrame()).toContain("Some detail");
-    expect(app.lastFrame()).toContain("Journal · 2026-09-27 ◀");
+    expect(app.lastFrame().split("\n").at(-1)).toContain("Journal ·");
     await keys(app, "e");
-    expect(app.lastFrame()).toContain("Details · note ◀");
+    expect(app.lastFrame().split("\n").at(-1)).toContain("Details ·");
     app.unmount(); await services.dispose();
   });
 
@@ -97,7 +141,7 @@ describe("JournalShell", () => {
     await pause(30);
     await keys(app, "gt");
     await keys(app, "[d");
-    expect(app.lastFrame()).toContain("Journal · 2026-09-25");
+    expect(app.lastFrame()).toMatch(/>\s+◦\s+Earlier/);
     app.unmount(); await services.dispose();
   });
 
@@ -108,7 +152,7 @@ describe("JournalShell", () => {
     const app = render(<TuiShell services={services} dimensions={{ columns: 40, rows: 8 }} />);
     await pause(30); await keys(app, "je");
     expect(app.lastFrame().split("\n")).toHaveLength(8);
-    expect(app.lastFrame()).toContain("Details · idea");
+    expect(app.lastFrame()).toContain("# Narrow");
     app.rerender(<TuiShell services={services} dimensions={{ columns: 40, rows: 1 }} />);
     expect(app.lastFrame().split("\n")).toHaveLength(1);
     app.unmount(); await services.dispose();

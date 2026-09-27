@@ -5,7 +5,7 @@ import { compareOrder, createAppStore, ordered, validJournalDate } from "../core
 import { defaultJournalKeymap, journalCommandId, resolveJournalStroke, type JournalCommand, type JournalKeymap, type JournalKeymapOverrides } from "./journal-keymap.js";
 import { strokeFromInput } from "./keymap.js";
 
-type Row = { key: string; date: string; entry?: JournalEntry };
+type Row = { key: string; date: string; entry?: JournalEntry; spacer?: boolean; selectable: boolean };
 type CaptureTarget = { kind: JournalKind; placement: Placement; journalDate: string; parentId?: string; anchorId?: string; keepPosition: boolean };
 type Draft = { token: number; type: "entry" | "paragraph"; id?: string; target?: CaptureTarget; parentId?: string; text: string; cursor: number; savedText: string; error?: string; saving?: boolean };
 type DetailItem = { type: "heading"; value: JournalEntry } | JournalBlock;
@@ -34,15 +34,23 @@ function entryIcon(entry: JournalEntry): string {
   return ascii ? asciiIcons[entry.kind] : icons[entry.kind];
 }
 
-function currentRows(entries: JournalEntry[], today: string, visitedDay: string, dayOrder: "oldest-first" | "newest-first"): Row[] {
+function currentRows(entries: JournalEntry[], today: string, visitedDays: readonly string[], dayOrder: "oldest-first" | "newest-first"): Row[] {
   const days = new Set(entries.filter((entry) => !entry.parentId).map((entry) => entry.journalDate));
   days.add(today);
-  days.add(visitedDay);
+  for (const day of visitedDays) days.add(day);
   const orderedDays = [...days].sort((a, b) => dayOrder === "oldest-first" ? a.localeCompare(b) : b.localeCompare(a));
-  return orderedDays.flatMap((date) => [
-    { key: `day:${date}`, date },
-    ...ordered(entries.filter((entry) => !entry.parentId && entry.journalDate === date)).map((entry) => ({ key: `entry:${entry.id}`, date, entry })),
-  ]);
+  return orderedDays.flatMap((date, index) => {
+    const dayEntries = ordered(entries.filter((entry) => !entry.parentId && entry.journalDate === date));
+    return [
+      ...(index ? [{ key: `spacer:${date}`, date, spacer: true, selectable: false }] : []),
+      { key: `day:${date}`, date, selectable: dayEntries.length === 0 },
+      ...dayEntries.map((entry) => ({ key: `entry:${entry.id}`, date, entry, selectable: true })),
+    ];
+  });
+}
+
+function daySelectionKey(rows: readonly Row[], date: string): string {
+  return rows.find((row) => row.date === date && row.entry)?.key ?? `day:${date}`;
 }
 
 function visibleSlice<T>(rows: T[], selected: number, height: number): T[] {
@@ -151,6 +159,7 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
   const [loading, setLoading] = useState(true);
   const [today, setToday] = useState(() => services.journal.today());
   const [visitedDay, setVisitedDay] = useState(() => services.journal.today());
+  const [visitedDays, setVisitedDays] = useState(() => [services.journal.today()]);
   const [selectedKey, setSelectedKey] = useState(() => `day:${services.journal.today()}`);
   const [dayOrder, setDayOrder] = useState<"oldest-first" | "newest-first">(orderProp ?? (process.env.Y_FELIN_JOURNAL_ORDER === "newest-first" ? "newest-first" : "oldest-first"));
   const [focus, setFocus] = useState<"journal" | "details">("journal");
@@ -189,9 +198,13 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
   useEffect(() => { draftRef.current = draft; }, [draft]);
   useEffect(() => { if (orderProp) setDayOrder(orderProp); }, [orderProp]);
 
-  const topLevelRows = currentRows(entries, today, visitedDay, dayOrder);
-  const selectedIndex = Math.max(0, topLevelRows.findIndex((row) => row.key === selectedKey));
+  const topLevelRows = currentRows(entries, today, visitedDays, dayOrder);
+  const requestedIndex = topLevelRows.findIndex((row) => row.key === selectedKey);
+  const selectedIndex = requestedIndex >= 0 && topLevelRows[requestedIndex]?.selectable
+    ? requestedIndex
+    : Math.max(0, topLevelRows.findIndex((row) => row.date === visitedDay && row.selectable));
   const selectedRow = topLevelRows[selectedIndex];
+  const navigableIndexes = topLevelRows.flatMap((row, index) => row.selectable ? [index] : []);
   const activeParentId = focus === "journal" ? selectedRow?.entry?.id : detailParentId;
   const parent = entries.find((entry) => entry.id === activeParentId);
   const detailBlocks: JournalBlock[] = parent ? [
@@ -329,12 +342,12 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
     if (command.type === "day") {
       if (command.target === "choose") { setDateText(day); setModal("date"); return; }
       if (command.target === "today") {
-        const nextToday = services.journal.today(); setToday(nextToday); setVisitedDay(nextToday); setSelectedKey(`day:${nextToday}`); setFocus("journal"); return;
+        const nextToday = services.journal.today(); setToday(nextToday); setVisitedDay(nextToday); setSelectedKey(daySelectionKey(topLevelRows, nextToday)); setFocus("journal"); return;
       }
       const populated = [...new Set(entries.filter((entry) => !entry.parentId).map((entry) => entry.journalDate))].sort();
       const candidates = command.target === "previous" ? populated.filter((date) => date < day) : populated.filter((date) => date > day);
       const target = command.target === "previous" ? candidates.at(-1) : candidates[0];
-      if (target) { setVisitedDay(target); setSelectedKey(`day:${target}`); setFocus("journal"); }
+      if (target) { setVisitedDay(target); setSelectedKey(daySelectionKey(topLevelRows, target)); setFocus("journal"); }
       return;
     }
     if (command.type === "pane") {
@@ -362,8 +375,11 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
           setDetailIndex(detailDisplay[nextScroll]?.index ?? 0);
         } else setDetailIndex((index) => command.type === "edge" ? (command.edge === "first" ? 0 : Math.max(0, detailItems.length - 1)) : Math.max(0, Math.min(detailItems.length - 1, index + move)));
       } else {
-        const index = command.type === "edge" ? (command.edge === "first" ? 0 : topLevelRows.length - 1) : Math.max(0, Math.min(topLevelRows.length - 1, selectedIndex + move));
-        const row = topLevelRows[index];
+        const position = navigableIndexes.indexOf(selectedIndex);
+        const nextPosition = command.type === "edge"
+          ? (command.edge === "first" ? 0 : navigableIndexes.length - 1)
+          : Math.max(0, Math.min(navigableIndexes.length - 1, position + move));
+        const row = topLevelRows[navigableIndexes[nextPosition] ?? 0];
         if (row) { setSelectedKey(row.key); setVisitedDay(row.date); }
       }
       return;
@@ -416,7 +432,7 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
     if (modal === "date") {
       if (key.escape) { setModal("none"); return; }
       if (key.return) {
-        if (validJournalDate(dateText)) { setVisitedDay(dateText); setSelectedKey(`day:${dateText}`); setFocus("journal"); setModal("none"); }
+        if (validJournalDate(dateText)) { setVisitedDays((days) => days.includes(dateText) ? days : [...days, dateText]); setVisitedDay(dateText); setSelectedKey(daySelectionKey(topLevelRows, dateText)); setFocus("journal"); setModal("none"); }
         else setMessage("Enter a valid date as YYYY-MM-DD.");
         return;
       }
@@ -447,15 +463,16 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
     if (resolution.state === "command") void runCommand(resolution.command);
   });
 
-  const leftRows = loading ? [{ key: "loading", date: today }] : topLevelRows;
+  const leftRows: Row[] = loading ? [{ key: "loading", date: today, selectable: false }] : topLevelRows;
   const leftSelected = loading ? 0 : selectedIndex;
-  const paneHeaderVisible = height >= 2;
-  const contentHeight = height - Number(paneHeaderVisible);
+  const paneSpacerVisible = height >= 2;
+  const contentHeight = height - Number(paneSpacerVisible);
+  const detailContentWidth = narrow ? columns : rightWidth - 1;
   const detailDisplay = detailItems.flatMap((item, index) => {
     const value = item.value;
     const source = "title" in value ? value.title : value.text;
     const prefix = item.type === "heading" ? "# " : "kind" in value ? `${entryIcon(value)} ` : "  ";
-    const lines = wrappedMarkup(source, (narrow ? columns : rightWidth) - 6);
+    const lines = wrappedMarkup(source, detailContentWidth - 6);
     return lines.map((chars, lineIndex) => ({ index, key: `${value.id}:${lineIndex}`, prefix: lineIndex ? "  " : prefix, chars, editing: draft?.id === value.id && lineIndex === 0 }));
   });
   const selectedDetailDisplay = Math.max(0, detailDisplay.findIndex((row) => row.index === safeDetailIndex));
@@ -475,10 +492,11 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
 
   const journalPane = (
     <Box flexDirection="column" width={detailsOpen && !narrow ? leftWidth : columns} height={height}>
-      {paneHeaderVisible ? <Text bold wrap="truncate-end">Journal · {selectedRow?.date ?? today} {focus === "journal" ? "◀" : ""}</Text> : null}
+      {paneSpacerVisible ? <Text> </Text> : null}
       {visibleSlice(leftRows, leftSelected, contentHeight).map((row) => {
         if (loading) return <Text key={row.key}>Loading journal…</Text>;
-        const selected = row.key === selectedKey;
+        if (row.spacer) return <Text key={row.key}> </Text>;
+        const selected = row.key === selectedRow?.key;
         if (!row.entry) return <Text key={row.key} bold={selected} wrap="truncate-end">{selected ? ">" : " "} {row.date}{row.date === today ? " · today" : ""}{entries.some((entry) => !entry.parentId && entry.journalDate === row.date) ? "" : " · empty (in note · it task)"}</Text>;
         const value = row.entry;
         const marker = hasDetails(value) ? "+" : " ";
@@ -489,13 +507,13 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
   );
 
   const detailsPane = (
-    <Box flexDirection="column" width={narrow ? columns : rightWidth} height={height}>
-      {paneHeaderVisible ? <Text bold wrap="truncate-end">Details · {parent?.kind ?? "none"} {focus === "details" ? "◀" : ""}</Text> : null}
+    <Box flexDirection="column" width={narrow ? columns : rightWidth} height={height} borderStyle="single" borderLeft={!narrow} borderTop={false} borderRight={false} borderBottom={false} borderLeftDimColor>
+      {paneSpacerVisible ? <Text> </Text> : null}
       {!parent ? <Text dimColor>No selected entry.</Text> : detailDisplay.length === 0 ? <Text dimColor>No details yet.</Text> : detailDisplay.slice(detailScroll, detailScroll + contentHeight).map((row) => {
         const value = detailItems[row.index]?.value;
         if (!value) return null;
         const selected = focus === "details" && row.index === safeDetailIndex;
-        return <Text key={row.key} bold={selected} wrap="truncate-end">{selected ? ">" : " "} {row.editing ? displayEditor(draft?.text ?? "", draft?.cursor ?? 0, rightWidth - 6) : <>{row.prefix}{styledRow(row.chars)}</>}</Text>;
+        return <Text key={row.key} bold={selected} wrap="truncate-end">{selected ? ">" : " "} {row.editing ? displayEditor(draft?.text ?? "", draft?.cursor ?? 0, detailContentWidth - 6) : <>{row.prefix}{styledRow(row.chars)}</>}</Text>;
       })}
     </Box>
   );
@@ -503,8 +521,8 @@ export function JournalShell({ services, store, columns: columnsProp, rows: rows
   return (
     <Box flexDirection="column" width={columns} height={rows}>
       {topVisible ? <Text inverse bold wrap="truncate-end">{` y-felin | Journal | ${today} | ${dayOrder === "oldest-first" ? "oldest → newest" : "newest → oldest"}`.padEnd(columns)}</Text> : null}
-      {modal === "help" ? <Box flexDirection="column" height={height}>{paneHeaderVisible ? <Text bold>Journal help</Text> : null}{visibleSlice(helpLines, helpIndex, contentHeight).map((line, index) => <Text key={index} wrap="truncate-end">{line}</Text>)}</Box>
-        : modal === "views" ? <Box flexDirection="column" height={height}>{paneHeaderVisible ? <Text bold>Views</Text> : null}<Text>Journal (current)</Text></Box>
+      {modal === "help" ? <Box flexDirection="column" height={height}>{paneSpacerVisible ? <Text bold>Journal help</Text> : null}{visibleSlice(helpLines, helpIndex, contentHeight).map((line, index) => <Text key={index} wrap="truncate-end">{line}</Text>)}</Box>
+        : modal === "views" ? <Box flexDirection="column" height={height}>{paneSpacerVisible ? <Text bold>Views</Text> : null}<Text>Journal (current)</Text></Box>
         : narrow ? (focus === "details" && detailsOpen ? detailsPane : journalPane)
         : <Box flexDirection="row" width={columns} height={height}>{detailsOpen ? <>{journalPane}{detailsPane}</> : <Box width={columns}>{journalPane}</Box>}</Box>}
       {bottomVisible ? <Text dimColor wrap="truncate-end">{footer}</Text> : null}

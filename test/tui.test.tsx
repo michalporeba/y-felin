@@ -4,7 +4,7 @@ import { render } from "ink-testing-library";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { TuiShell } from "../src/tui/shell.js";
+import { TuiShell as AppTuiShell } from "../src/tui/shell.js";
 import {
   compileKeymap,
   defaultKeymapConfig,
@@ -18,6 +18,11 @@ import {
   createLocalEngine,
 } from "../src/index.js";
 import { parseTuiArgs } from "../src/tui.tsx";
+
+// These established tests cover the legacy inbox path, which remains available
+// explicitly while the journal is now the default perspective.
+const TuiShell = (props: React.ComponentProps<typeof AppTuiShell>) =>
+  <AppTuiShell initialPerspectiveId="inbox" {...props} />;
 
 function expectFrameToContainAll(frame: string, anchors: string[]) {
   for (const anchor of anchors) {
@@ -85,6 +90,10 @@ describe("TuiShell", () => {
     expect(parseTuiArgs(["--data-dir", "/tmp/custom"])).toEqual({
       dataDir: "/tmp/custom",
     });
+  });
+
+  it("lets a later data directory override the source-run default", () => {
+    expect(parseTuiArgs(["--data-dir=./data", "--data-dir=/tmp/journal"])).toEqual({ dataDir: "/tmp/journal" });
   });
 
   it("accepts a shell data directory override", () => {

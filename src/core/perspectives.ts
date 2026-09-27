@@ -1,7 +1,7 @@
 import { appError } from "./errors.js";
 import { err, ok, type AppResult } from "./results.js";
 
-export type PerspectiveId = "inbox";
+export type PerspectiveId = "journal" | "inbox";
 
 export type PerspectiveDefinition = {
   readonly id: PerspectiveId;
@@ -22,6 +22,11 @@ export type PerspectiveHelpDefinition = {
 
 const perspectives = [
   {
+    id: "journal",
+    title: "Journal",
+    summary: "Continuous dated journal for capture and review.",
+  },
+  {
     id: "inbox",
     title: "Inbox",
     summary: "Primary perspective for capturing and reviewing items.",
@@ -29,6 +34,16 @@ const perspectives = [
 ] as const satisfies readonly PerspectiveDefinition[];
 
 const perspectiveHelp = {
+  journal: {
+    title: "Journal Help",
+    summary: "Dated entries, explicit details, and pane-aware commands.",
+    symbols: [
+      { label: ">", description: "Selected row." },
+      { label: "+", description: "Entry has additional details." },
+      { label: "□ ◩ ■", description: "Open, active, and done tasks." },
+      { label: "- ✧ ◦ ☷ ◇", description: "Note, idea, event, checklist, and appointment." },
+    ],
+  },
   inbox: {
     title: "Inbox Help",
     summary: "Actions and symbols for the chronological inbox perspective.",

@@ -21,6 +21,19 @@ The current TUI-only executable and narrow local-first delivery scope remain
 the implementation baseline. Plugin mechanics, additional interfaces, and the
 next capability require concrete follow-up design and delivery slices.
 
+## Journal implementation update — 27 September 2026
+
+Journal is now the default TUI perspective. The earlier Inbox-first rules below
+describe the initial slice and its retained legacy view. The current brief is
+[JOURNAL_IMPLEMENTATION.md](JOURNAL_IMPLEMENTATION.md). Journal entries and prose
+paragraphs are independently identified lofipod entities. Legacy tasks and notes
+are projected into the journal by their creation-time local date without
+rewriting them. Each save updates one entity; known fields and unknown RDF
+triples are preserved by the entity projection. Sibling positions use exact
+fractional order keys. This does not provide CRDT or
+cross-application conflict resolution. Day order is an environment setting with
+a session toggle. Undo remains deferred.
+
 ## Accepted decisions
 
 ### Product shape

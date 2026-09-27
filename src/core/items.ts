@@ -14,6 +14,7 @@ export type Task = {
   readonly createdAt: string;
   readonly priority: PriorityLevel;
   readonly workflowState: WorkflowState;
+  readonly extraTriples?: import("lofipod").Triple[];
 };
 
 export type Note = {
@@ -21,6 +22,7 @@ export type Note = {
   readonly kind: "note";
   readonly title: string;
   readonly createdAt: string;
+  readonly extraTriples?: import("lofipod").Triple[];
 };
 
 export type AnyItem = Task | Note;

@@ -8,27 +8,20 @@ type ParsedTuiArgs = {
 };
 
 export function parseTuiArgs(argv: string[]): ParsedTuiArgs {
-  const dataDirFlag = argv.find((arg) => arg === "--data-dir" || arg.startsWith("--data-dir="));
-  if (!dataDirFlag) {
-    return {};
-  }
-
-  if (dataDirFlag.startsWith("--data-dir=")) {
-    const dataDir = dataDirFlag.slice("--data-dir=".length);
-    if (!dataDir) {
-      throw new Error("Missing value for --data-dir.");
+  for (let index = argv.length - 1; index >= 0; index -= 1) {
+    const flag = argv[index];
+    if (flag?.startsWith("--data-dir=")) {
+      const dataDir = flag.slice("--data-dir=".length);
+      if (!dataDir) throw new Error("Missing value for --data-dir.");
+      return { dataDir };
     }
-
-    return { dataDir };
+    if (flag === "--data-dir") {
+      const dataDir = argv[index + 1];
+      if (!dataDir || dataDir.startsWith("-")) throw new Error("Missing value for --data-dir.");
+      return { dataDir };
+    }
   }
-
-  const flagIndex = argv.indexOf("--data-dir");
-  const dataDir = argv[flagIndex + 1];
-  if (!dataDir || dataDir.startsWith("-")) {
-    throw new Error("Missing value for --data-dir.");
-  }
-
-  return { dataDir };
+  return {};
 }
 
 export function TuiApp({ dataDir }: { readonly dataDir?: string } = {}) {

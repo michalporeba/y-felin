@@ -34,12 +34,60 @@ mlg:Note
   mlg:symbol "-" ;
   rdfs:subClassOf mlg:JournalEntry .
 
+mlg:Idea
+  a owl:Class ;
+  rdfs:label "Idea"@en ;
+  rdfs:comment "A journal entry recording something to explore."@en ;
+  mlg:symbol "✧" ;
+  rdfs:subClassOf mlg:JournalEntry .
+
 mlg:Event
   a owl:Class ;
   rdfs:label "Event"@en ;
   rdfs:comment "An event journal entry, representing something that occurs at a specific time."@en ;
   mlg:symbol "○" ;
   rdfs:subClassOf mlg:JournalEntry .
+
+mlg:Checklist
+  a owl:Class ;
+  rdfs:label "Checklist"@en ;
+  rdfs:comment "A checklist-labelled journal entry; execution semantics are defined separately."@en ;
+  mlg:symbol "☷" ;
+  rdfs:subClassOf mlg:JournalEntry .
+
+mlg:Appointment
+  a owl:Class ;
+  rdfs:label "Appointment"@en ;
+  rdfs:comment "An appointment-labelled journal entry; a scheduled date is separate from the journal date."@en ;
+  mlg:symbol "◇" ;
+  rdfs:subClassOf mlg:JournalEntry .
+
+mlg:Paragraph
+  a owl:Class ;
+  rdfs:label "Paragraph"@en ;
+  rdfs:comment "An independently identified prose block within a journal entry."@en .
+
+mlg:entryKind
+  a owl:DatatypeProperty ;
+  rdfs:label "entry kind"@en ;
+  rdfs:domain mlg:JournalEntry .
+
+mlg:journalDate
+  a owl:DatatypeProperty ;
+  rdfs:label "journal date"@en ;
+  rdfs:comment "The local calendar day under which an entry appears, separate from creation time."@en ;
+  rdfs:domain mlg:JournalEntry .
+
+mlg:order
+  a owl:DatatypeProperty ;
+  rdfs:label "display order"@en ;
+  rdfs:comment "Position among siblings in the dated journal or a details list."@en .
+
+mlg:parent
+  a owl:ObjectProperty ;
+  rdfs:label "parent entry"@en ;
+  rdfs:comment "The owning journal entry of a paragraph or child entry."@en ;
+  rdfs:range mlg:JournalEntry .
 
 mlg:workflowState
   a owl:ObjectProperty ;

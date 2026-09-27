@@ -17,7 +17,7 @@ conflicting proposals in [JOURNAL_TASKS.md](JOURNAL_TASKS.md). The sequential st
 below document the original roadmap, not the new journal scope. Specialised
 checklists and inventory remain later candidates.
 
-## Current decisions and instructions
+## Original implementation baseline (historical)
 
 - Build y-felin in TypeScript.
 - Use Ink for the primary TUI.

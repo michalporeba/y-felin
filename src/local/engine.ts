@@ -2,6 +2,8 @@ import { createEngine, type Engine } from "lofipod";
 import { createSqliteStorage } from "lofipod/node";
 import { createDefaultNote, NoteEntity } from "./note-entity.js";
 import { createDefaultTask, TaskEntity } from "./task-entity.js";
+import { JournalEntryEntity, JournalParagraphEntity } from "./journal-entity.js";
+import type { JournalEntry, JournalParagraph } from "../core/journal.js";
 import {
   resolveLocalStorageConfig,
   type LocalStorageConfig,
@@ -19,6 +21,12 @@ export type YFelinLocalEngine = {
   readonly saveNote: (note: Note) => Promise<Note>;
   readonly getNote: (id: string) => Promise<Note | null>;
   readonly listNotes: (options?: { readonly limit?: number }) => Promise<Note[]>;
+  readonly saveJournalEntry: (entry: JournalEntry) => Promise<JournalEntry>;
+  readonly getJournalEntry: (id: string) => Promise<JournalEntry | null>;
+  readonly listJournalEntries: () => Promise<JournalEntry[]>;
+  readonly saveJournalParagraph: (paragraph: JournalParagraph) => Promise<JournalParagraph>;
+  readonly getJournalParagraph: (id: string) => Promise<JournalParagraph | null>;
+  readonly listJournalParagraphs: () => Promise<JournalParagraph[]>;
   readonly syncState: () => Promise<SyncState>;
   readonly dispose: () => Promise<void>;
 };
@@ -28,7 +36,7 @@ export function createLocalEngine(
 ): YFelinLocalEngine {
   const storage = resolveLocalStorageConfig(input);
   const engine = createEngine({
-    entities: [TaskEntity, NoteEntity],
+    entities: [TaskEntity, NoteEntity, JournalEntryEntity, JournalParagraphEntity],
     storage: createSqliteStorage({
       filePath: storage.sqliteFilePath,
     }),
@@ -55,6 +63,12 @@ export function createLocalEngine(
     listNotes(options) {
       return engine.list<Note>("note", options);
     },
+    saveJournalEntry(entry) { return engine.save<JournalEntry>("journal-entry", entry); },
+    getJournalEntry(id) { return engine.get<JournalEntry>("journal-entry", id); },
+    listJournalEntries() { return engine.list<JournalEntry>("journal-entry"); },
+    saveJournalParagraph(paragraph) { return engine.save<JournalParagraph>("journal-paragraph", paragraph); },
+    getJournalParagraph(id) { return engine.get<JournalParagraph>("journal-paragraph", id); },
+    listJournalParagraphs() { return engine.list<JournalParagraph>("journal-paragraph"); },
     syncState() {
       return engine.sync.state().then(({ status, configured, pendingChanges }) => ({
         status,

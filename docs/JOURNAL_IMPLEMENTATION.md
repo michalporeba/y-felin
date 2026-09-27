@@ -1,11 +1,26 @@
 # Implementation brief: the first usable journal
 
-Recorded 27 September 2026. Ready for a coding agent; not a description of
-functionality already delivered.
+Recorded 27 September 2026 as the implementation brief. The first journal slice
+is implemented in the current checkout; this document remains its acceptance
+reference. Everyday-use feedback is still needed before calling the workflow
+finished from a product perspective.
+
+## Delivery note
+
+Journal is the default TUI; existing task/note records are projected into it
+without a data rewrite. Entries and paragraphs are independent RDF entities.
+The implementation uses exact fractional order keys, so repeated insertion
+between the same two blocks does not exhaust floating-point precision. Unknown
+RDF triples, including additional rdf:type assertions, survive supported edits.
+The data directory accepts `journal-config.json` for day order and keybindings;
+README.md and KEYBINDINGS.md document the current controls. The separate Inbox
+shell remains available explicitly for compatibility. Autosave is local; it
+does not provide crash recovery for unflushed drafts, undo, or conflict merging
+across independent applications.
 
 ## Instructions and precedence
 
-Implement this brief in small, tested vertical slices. Read AGENTS.md first;
+Changes to this brief should be delivered in small, tested vertical slices. Read AGENTS.md first;
 inspect the current code and installed lofipod API; preserve existing changes
 and data. Follow graphify instructions when available, reporting missing tooling
 or artifacts rather than claiming checks were performed.

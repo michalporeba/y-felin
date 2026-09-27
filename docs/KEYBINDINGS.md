@@ -1,8 +1,61 @@
 # Keybindings
 
+## Current journal defaults (27 September 2026)
+
+The journal is the default TUI. The older Inbox bindings and design proposals
+later in this file describe the retained legacy view or historical ideas.
+
+Normal mode uses short composed commands. `i` and `a` are prefixes; they do not
+start typing immediately. After a prefix, the footer shows available next keys.
+Esc cancels a partial command. While editing text, command letters type literally.
+
+| Keys | Journal focused | Details focused |
+| --- | --- | --- |
+| `iX` | Before selected entry | Before selected block |
+| `ahX` | After selected entry | After selected block |
+| `ifX` / `ilX` | First / last in selected day | First / last in details |
+| `aX` | Append to today, preserving an older day's focus | Append in details |
+
+`X`: `n` note (paragraph in details), `i` idea, `t` task, `e` event,
+`c` checklist, `a` appointment. Child entries have one nesting level. `in` and
+`an` in details create prose paragraphs. `it` and `at` there create child tasks.
+
+| Keys | Action |
+| --- | --- |
+| `j` / `k`, arrows | Move in focused normal-mode list |
+| `gg` / `G`, `Ctrl+d` / `Ctrl+u` | First/last, half-page |
+| `gt`, `gd`, `[d` / `]d` | Today, date picker, chronological previous/next populated day |
+| `gv`, `zo` | View picker, reverse day order |
+| `o`, `e` | Preview, open details with focus |
+| `Ctrl+w h` / `Ctrl+w l` / `Ctrl+w c` | Focus journal/details, close details |
+| `Enter`, `Esc` | Edit selected block, leave text mode and save |
+| `h` / `l`, `p` | Task state earlier/later, toggle priority |
+| `?`, `H`, `q` | Help, help, quit from normal mode |
+
+The heading is the first editable line in details. Paragraph text supports
+`Ctrl+n` for a soft line break. Edits autosave locally; a failed save keeps the
+draft. `Ctrl+q` while editing opens the unsaved exit warning. `Esc` retries a
+failed save and leaves text mode only after success. See
+[JOURNAL_IMPLEMENTATION.md](JOURNAL_IMPLEMENTATION.md) for scope and limits.
+
+Set `Y_FELIN_JOURNAL_ORDER=newest-first` to start with newer days above older
+ones. `zo` changes order for the current session. The default is oldest first.
+The data directory can contain `journal-config.json` with `dayOrder` and a
+`keybindings` map from space-separated strokes to semantic action IDs. For
+example, `"z n": "capture.today.note"` adds an alias, and `"i t": null`
+removes the default task-insert binding. Other IDs follow the same pattern:
+`capture.before.task`, `capture.after.idea`, `capture.first.event`,
+`capture.last.appointment`, `day.today`, `pane.close`, `move.down`, `help`,
+and so on. Invalid or prefix-ambiguous mappings cause a clear startup error.
+
+## Legacy Inbox bindings and earlier planning notes
+
+The remaining material records the first Inbox UI and older command proposals.
+It does not override the current journal defaults above.
+
 ## Purpose
 
-This document defines the current action vocabulary, default keybindings, and reserved key space for y-felin.
+This section defines the original Inbox action vocabulary and reserved key space.
 
 It is a planning and coordination document. The goal is to keep:
 
@@ -296,8 +349,10 @@ The intended long-term model is:
 That means this document should remain aligned with:
 
 - the action inventory in code
-- the default keymap in [src/tui/keymap.ts](/media/michal/data/code/melin/src/tui/keymap.ts)
-- the active help rendering in [src/tui/shell.tsx](/media/michal/data/code/melin/src/tui/shell.tsx)
+- the legacy default keymap in `src/tui/keymap.ts`
+- the legacy help rendering in `src/tui/shell.tsx`
+
+## Historical command proposals
 
 Some of the actions will need multi stroke bindings. 
 

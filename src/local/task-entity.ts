@@ -1,5 +1,6 @@
 import { defineEntity, type EntityDefinition } from "lofipod";
 import type { Task } from "../core/items.js";
+import { extras } from "./journal-entity.js";
 import {
   baseItemTriples,
   priorityTriple,
@@ -33,6 +34,7 @@ export const TaskEntity: EntityDefinition<Task> = defineEntity<Task>({
       ...baseItemTriples(subject, task),
       priorityTriple(subject, task.priority),
       workflowStateTriple(subject, task.workflowState),
+      ...(task.extraTriples ?? []),
     ];
   },
   project(graph, helpers) {
@@ -46,6 +48,7 @@ export const TaskEntity: EntityDefinition<Task> = defineEntity<Task>({
       createdAt: stringValue(graph, subject, vocabulary.created),
       priority: projectPriority(graph, subject),
       workflowState: projectWorkflowState(graph, subject),
+      ...(() => { const extraTriples = extras(graph, [vocabulary.title.value, vocabulary.created.value, vocabulary.priority.value, vocabulary.workflowState.value], [vocabulary.Task.value]); return extraTriples ? { extraTriples } : {}; })(),
     };
   },
 });

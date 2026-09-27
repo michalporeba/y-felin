@@ -60,6 +60,16 @@ const registry = createActionRegistry([
       return services.sync.state();
     },
   },
+  { id: "journal.list", run(_input, services) { return services.journal.list(); } },
+  { id: "journal.paragraphs", run(_input, services) { return services.journal.paragraphs(); } },
+  { id: "journal.get", run(input, services) { return services.journal.get(input.id); } },
+  { id: "journal.blocks", run(input, services) { return services.journal.blocks(input.parentId); } },
+  { id: "journal.create", run(input, services) { return services.journal.create(input); } },
+  { id: "journal.paragraph", run(input, services) { return services.journal.paragraph(input); } },
+  { id: "journal.updateTitle", run(input, services) { return services.journal.updateTitle(input.id, input.title); } },
+  { id: "journal.updateParagraph", run(input, services) { return services.journal.updateParagraph(input.id, input.text); } },
+  { id: "journal.workflow", run(input, services) { return services.journal.workflow(input.id, input.direction); } },
+  { id: "journal.priority", run(input, services) { return services.journal.togglePriority(input.id); } },
 ] as const);
 
 export type AppStore = {

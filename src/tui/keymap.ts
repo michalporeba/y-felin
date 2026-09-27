@@ -68,6 +68,7 @@ const actionDescriptions: Record<TuiActionId, string> = {
 };
 
 const perspectiveActions: Record<PerspectiveId, TuiActionId[]> = {
+  journal: [],
   inbox: [
     "cursor.down",
     "cursor.up",

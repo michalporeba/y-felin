@@ -1,5 +1,6 @@
 import { defineEntity, type EntityDefinition } from "lofipod";
 import type { Note } from "../core/items.js";
+import { extras } from "./journal-entity.js";
 import {
   baseItemTriples,
   rdf,
@@ -27,6 +28,7 @@ export const NoteEntity: EntityDefinition<Note> = defineEntity<Note>({
     return [
       [subject, rdf.type, vocabulary.Note],
       ...baseItemTriples(subject, note),
+      ...(note.extraTriples ?? []),
     ];
   },
   project(graph, helpers) {
@@ -38,6 +40,7 @@ export const NoteEntity: EntityDefinition<Note> = defineEntity<Note>({
       kind: "note",
       title: stringValue(graph, subject, vocabulary.title),
       createdAt: stringValue(graph, subject, vocabulary.created),
+      ...(() => { const extraTriples = extras(graph, [vocabulary.title.value, vocabulary.created.value], [vocabulary.Note.value]); return extraTriples ? { extraTriples } : {}; })(),
     };
   },
 });

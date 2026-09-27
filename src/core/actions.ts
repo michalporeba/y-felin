@@ -4,6 +4,7 @@ import type { AppResult } from "./results.js";
 import type { AnyItem } from "./items.js";
 import type { PerspectiveDefinition, PerspectiveId } from "./perspectives.js";
 import type { SyncState } from "./sync.js";
+import type { JournalBlock, JournalEntry, JournalKind, JournalParagraph, Placement } from "./journal.js";
 
 export type ActionId =
   | "perspectives.list"
@@ -14,7 +15,17 @@ export type ActionId =
   | "items.workflow.next"
   | "items.workflow.previous"
   | "items.priority.toggle"
-  | "sync.state";
+  | "sync.state"
+  | "journal.list"
+  | "journal.paragraphs"
+  | "journal.get"
+  | "journal.blocks"
+  | "journal.create"
+  | "journal.paragraph"
+  | "journal.updateTitle"
+  | "journal.updateParagraph"
+  | "journal.workflow"
+  | "journal.priority";
 
 export type ActionMap = {
   "perspectives.list": {
@@ -53,6 +64,16 @@ export type ActionMap = {
     input: void;
     output: SyncState;
   };
+  "journal.list": { input: void; output: JournalEntry[] };
+  "journal.paragraphs": { input: void; output: JournalParagraph[] };
+  "journal.get": { input: { id: string }; output: JournalEntry | null };
+  "journal.blocks": { input: { parentId: string }; output: JournalBlock[] };
+  "journal.create": { input: { kind: JournalKind; title: string; journalDate?: string; parentId?: string; placement: Placement; anchorId?: string }; output: JournalEntry };
+  "journal.paragraph": { input: { parentId: string; text: string; placement: Placement; anchorId?: string }; output: JournalParagraph };
+  "journal.updateTitle": { input: { id: string; title: string }; output: JournalEntry };
+  "journal.updateParagraph": { input: { id: string; text: string }; output: JournalParagraph };
+  "journal.workflow": { input: { id: string; direction: "next" | "previous" }; output: JournalEntry };
+  "journal.priority": { input: { id: string }; output: JournalEntry };
 };
 
 export type ActionDefinition<TActionId extends ActionId> = {

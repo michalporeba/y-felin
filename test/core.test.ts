@@ -27,8 +27,13 @@ afterEach(() => {
 });
 
 describe("shared core", () => {
-  it("lists the inbox perspective", () => {
+  it("lists the journal and legacy inbox perspectives", () => {
     expect(listPerspectives()).toEqual([
+      {
+        id: "journal",
+        title: "Journal",
+        summary: "Continuous dated journal for capture and review.",
+      },
       {
         id: "inbox",
         title: "Inbox",
@@ -118,7 +123,7 @@ describe("shared core", () => {
     await expect(store.dispatch("perspectives.list", undefined)).resolves.toEqual(
       {
         ok: true,
-        value: ["inbox"],
+        value: ["journal", "inbox"],
       },
     );
 

@@ -20,6 +20,9 @@ import { useComposer } from "./useComposer.js";
 import { useInboxItems } from "./useInboxItems.js";
 import { useTuiKeyboard } from "./useTuiKeyboard.js";
 import { useTuiActions } from "./useTuiActions.js";
+import { JournalShell } from "./JournalShell.js";
+import type { JournalKeymapOverrides } from "./journal-keymap.js";
+import { loadJournalUiConfig } from "./journal-config.js";
 
 export type TuiShellProps = {
   readonly showTopBar?: boolean;
@@ -33,9 +36,32 @@ export type TuiShellProps = {
     readonly rows: number;
   };
   readonly keymapConfig?: KeymapConfig;
+  readonly journalKeymapOverrides?: JournalKeymapOverrides;
+  readonly journalDayOrder?: "oldest-first" | "newest-first";
 };
 
 export function TuiShell({
+  showTopBar = true,
+  showBottomBar = true,
+  initialPerspectiveId = "journal",
+  dataDir,
+  services,
+  store,
+  dimensions,
+  keymapConfig = defaultKeymapConfig,
+  journalKeymapOverrides,
+  journalDayOrder,
+}: TuiShellProps) {
+  const [ownedServices] = useState(() => services ?? createAppServices({ localStorage: dataDir ? { dataDir } : undefined }));
+  const [journalConfig] = useState(() => initialPerspectiveId === "journal" && (!services || dataDir) ? loadJournalUiConfig(dataDir) : {});
+  useEffect(() => () => { if (!services) void ownedServices.dispose(); }, [ownedServices, services]);
+  if (initialPerspectiveId === "journal") {
+    return <JournalShell services={ownedServices} store={store} columns={dimensions?.columns} rows={dimensions?.rows} showTopBar={showTopBar} showBottomBar={showBottomBar} keymapOverrides={journalKeymapOverrides ?? journalConfig.keybindings} dayOrder={journalDayOrder ?? (process.env.Y_FELIN_JOURNAL_ORDER === "newest-first" ? "newest-first" : journalConfig.dayOrder)} />;
+  }
+  return <InboxShell showTopBar={showTopBar} showBottomBar={showBottomBar} initialPerspectiveId={initialPerspectiveId} dataDir={dataDir} services={ownedServices} store={store} dimensions={dimensions} keymapConfig={keymapConfig} />;
+}
+
+function InboxShell({
   showTopBar = true,
   showBottomBar = true,
   initialPerspectiveId = "inbox",

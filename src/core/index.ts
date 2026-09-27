@@ -29,6 +29,8 @@ export {
 export { createActionRegistry, type ActionRegistry } from "./registry.js";
 export { err, ok, type AppResult } from "./results.js";
 export type { SyncState } from "./sync.js";
+export { compareOrder, journalKinds, journalTitle, localJournalDate, ordered, positionOrder, validJournalDate } from "./journal.js";
+export type { JournalBlock, JournalEntry, JournalKind, JournalParagraph, Placement } from "./journal.js";
 export {
   createAppServices,
   type AppServices,

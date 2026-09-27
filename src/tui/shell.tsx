@@ -85,6 +85,15 @@ function InboxShell({
     status: "unconfigured",
     configured: false,
     pendingChanges: 0,
+    reconciliation: { lastUnsupportedPolicy: null, lastUnsupportedReason: null },
+    migration: { lastLocalOutcome: null, lastCanonicalRemoteOutcome: null },
+    connection: {
+      reachable: false,
+      lastSyncedAt: null,
+      lastFailedAt: null,
+      lastFailureReason: null,
+      notificationsActive: false,
+    },
   });
   const inbox = useInboxItems(appStore);
   const composer = useComposer({

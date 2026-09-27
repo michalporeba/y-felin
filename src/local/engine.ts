@@ -70,11 +70,7 @@ export function createLocalEngine(
     getJournalParagraph(id) { return engine.get<JournalParagraph>("journal-paragraph", id); },
     listJournalParagraphs() { return engine.list<JournalParagraph>("journal-paragraph"); },
     syncState() {
-      return engine.sync.state().then(({ status, configured, pendingChanges }) => ({
-        status,
-        configured,
-        pendingChanges,
-      }));
+      return engine.sync.state();
     },
     dispose() {
       return engine.dispose();

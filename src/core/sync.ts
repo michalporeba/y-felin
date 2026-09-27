@@ -1,5 +1,1 @@
-export type SyncState = {
-  readonly status: "unconfigured" | "offline" | "syncing" | "idle" | "pending";
-  readonly configured: boolean;
-  readonly pendingChanges: number;
-};
+export type SyncState = Readonly<import("lofipod").SyncState>;

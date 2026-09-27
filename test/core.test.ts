@@ -519,12 +519,15 @@ describe("shared core", () => {
     const services = createAppServices({ localEngine });
     const store = createAppStore(services);
 
-    await expect(store.dispatch("sync.state", undefined)).resolves.toEqual({
+    await expect(store.dispatch("sync.state", undefined)).resolves.toMatchObject({
       ok: true,
       value: {
         status: "unconfigured",
         configured: false,
         pendingChanges: 0,
+        reconciliation: { lastUnsupportedPolicy: null, lastUnsupportedReason: null },
+        migration: { lastLocalOutcome: null, lastCanonicalRemoteOutcome: null },
+        connection: { reachable: false },
       },
     });
 

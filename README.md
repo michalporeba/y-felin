@@ -132,6 +132,8 @@ y-felin is also an exploration of a calmer model for personal software:
 
 If you want the deeper technical and architectural context:
 
+- [Session handoff](docs/SESSION_HANDOFF_2026-09-27.md) carries forward the
+  decisions and last known state from the September 2026 portfolio review chat
 - [ADR.md](docs/ADR.md) records the current architecture decisions
 - [PLANS.md](docs/PLANS.md) lists small implementation slices
 - [GLOSSARY.md](docs/GLOSSARY.md) defines project terminology used in design discussions
